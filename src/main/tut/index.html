@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Type Classes from the Ground Up</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
+  </head>
+  <body>
+      <textarea id="source">
+class: center, middle
+
+# Type Classes from the Ground Up
+
+Nicolas Rinaudo • [`@NicolasRinaudo`](https://twitter.com/NicolasRinaudo) • [ioSquare](http://iosquare.com)
+
+---
+
+## Goals
+
+* Understand what purpose type classes serve
+* Get a feel for  implicit composition
+
+--
+
+## Running example: CSV parser
+
+CSV data is composed of rows and columns
+
+```csv
+1,Nicolas,Rinaudo
+2,Jessica,Jones
+3,Matt,Murdock
+```
+
+---
+
+## Simple CSV parser
+
+```tut:silent
+def parseCsv(input: String): List[List[String]] =
+  input.split('\n').toList.map(_.split(",").toList)
+```
+
+We purposefully ignore the following flaws:
+
+* cannot handle "complex" CSV data
+* inefficient, both in terms of CPU and memory
+
+---
+
+## Basic example: raw numbers
+
+```tut:silent
+val input = "1,2,3\n4,5,6\n7,8,9"
+```
+
+--
+
+Running the parser yields:
+
+```tut
+parseCsv(input)
+```
+
+--
+
+Representing clear numeric values as `String`s is unsatisfactory.
+
+---
+
+## Improvement: mapping to `Int`
+
+```tut
+parseCsv(input).map(_.map(_.toInt))
+```
+
+--
+
+Not very practical: you have to manually parse `Int`s every time.
+
+---
+
+## Decoding CSV: first attempt
+
+Usual answer to making reusable code: λ-functions
+
+```tut:silent
+def decodeCsv[A](input: String)(f: String ⇒ A): List[List[A]] =
+  parseCsv(input).map(_.map(f))
+```
+
+--
+
+Running the decoder yields:
+
+```tut
+decodeCsv(input)(_.toInt)
+```
+
+--
+
+Better, but not great: you have to explicitly specify how to decode types every time.
+
+---
+
+## Small detour: implicits
+
+> When a function expects a parameter of type `T`, that parameter is marked as implicit and there exists a value of
+> type `T` marked as implicit in scope, then the compiler can use that value automatically.
+
+--
+
+Example:
+
+```tut:silent
+implicit val a: Int = 2
+
+def printInt(implicit i: Int): Unit = println(i)
+```
+
+--
+
+Running `printInt` without a parameter:
+
+```tut
+printInt
+```
+
+---
+
+## Decoding CSV with implicits
+
+Declare an implicit decoding function parameter:
+
+```tut:silent
+def decodeCsv[A](input: String)
+                (implicit f: String ⇒ A): List[List[A]] =
+  parseCsv(input).map(_.map(f))
+
+implicit val strToInt: String ⇒ Int = Integer.parseInt
+```
+
+--
+
+Running the decoder without a decoding function yields:
+
+```tut
+decodeCsv[Int](input)
+```
+
+---
+
+## The dangers of implicits
+
+> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit function from `S` to
+> `T` in scope, it will be applied silently.
+
+This is called implicit conversions and is generally accepted as not a good thing _for the most part_.
+
+--
+
+```tut
+def add1(i: Int): Int = i + 1
+
+add1("123")
+```
+
+---
+
+## Finally: type classes
+
+To avoid pluging into the implicit conversion mechanism, declare a dedicated type:
+
+```tut:silent
+trait CellDecoder[T] {
+  def decode(s: String): T
+}
+
+implicit val intDecoder: CellDecoder[Int] = new CellDecoder[Int] {
+  override def decode(s: String) = s.toInt
+}
+```
+
+---
+
+## Type class backed decoder
+
+We can now rewrite `decodeCsv`:
+
+```tut:silent
+def decodeCsv[A](input: String)
+                (implicit da: CellDecoder[A]): List[List[A]] =
+  parseCsv(input).map(_.map(da.decode))
+```
+
+--
+
+And run it as expected:
+
+```tut
+decodeCsv[Int](input)
+```
+
+---
+
+## Enhancement without inheritance!
+
+Important realisation: _we've added a new feature to `Int`, even though it's `final`_.
+
+Type classes allow us to extend existing types without subtyping them.
+
+
+---
+
+## Heterogenous types
+
+`decodeCsv` can decode our input. But what about:
+
+```tut
+val input = "1,Nicolas,true\n2,Jessica,false\n3,Matt,false"
+```
+
+--
+
+This could be decoded as a `(Int, String, Boolean)`.
+
+Problem: we only know how to decode rows of homogenous types.
+
+---
+
+## `RowDecoder` type class
+
+We need a decoder type class for rows:
+
+```tut:silent
+trait RowDecoder[T] {
+  def decode(ss: List[String]): T
+}
+```
+
+--
+
+`decodeCsv` now looks like:
+
+```tut:silent
+def decodeCsv[A](input: String)
+                (implicit da: RowDecoder[A]): List[A] =
+  parseCsv(input).map(da.decode)
+```
+
+---
+
+## First, a bit of plumbing
+
+Let's make instance creation less of a pain:
+
+```tut:silent
+def cellDecoder[A](f: String ⇒ A) = new CellDecoder[A] {
+  override def decode(s: String) = f(s)
+}
+
+def rowDecoder[A](f: List[String] ⇒ A) = new RowDecoder[A] {
+  override def decode(ss: List[String]) = f(ss)
+}
+
+```
+
+--
+
+Also, create a bunch of useful `CellDecoder` instances:
+
+```tut:silent
+implicit val intDecoder = cellDecoder(_.toInt)
+implicit val floatDecoder = cellDecoder(_.toFloat)
+implicit val stringDecoder = cellDecoder(identity)
+implicit val booleanDecoder = cellDecoder(_.toBoolean)
+```
+
+---
+
+## First attempt at decoding tuples
+
+```tut:silent
+implicit val decoder = rowDecoder { row ⇒
+  (row(0).toInt, row(1), row(2).toBoolean)
+}
+```
+
+--
+
+This works:
+
+```tut
+decodeCsv[(Int, String, Boolean)](input)
+```
+
+--
+
+Disapointing, though: parsing of individual cells is hard-coded.
+
+Didn't we just write a mechanism for that?
+
+---
+
+## Using `CellDecoder`, take 1
+
+Naive implementation:
+
+```tut:silent
+implicit val decoder = rowDecoder { row ⇒
+  (intDecoder.decode(row(0)),
+   stringDecoder.decode(row(1)),
+   booleanDecoder.decode(row(2)))
+}
+```
+
+--
+
+The decoder instances are hard-coded - always a sign that things can be made more generic.
+
+---
+
+## Another look at implicit resolution
+
+There's another rule used in implicit resolution:
+
+> When the compiler looks for an implicit values of type `T` and finds a function that returns a `T` that it can call,
+> it will use its return value.
+
+Of interest to us: a function that returns a `T` and that takes implicit parameters that can all be fulfilled.
+
+---
+
+## Using `CellDecoder`, take 2
+
+Better implementation:
+
+```tut:silent
+implicit def decoder(implicit di: CellDecoder[Int],
+                              ds: CellDecoder[String],
+                              db: CellDecoder[Boolean]) =
+  rowDecoder { row ⇒
+    (di.decode(row(0)), ds.decode(row(1)), db.decode(row(2)))
+  }
+```
+
+--
+
+This produces the desired result:
+
+```tut
+decodeCsv[(Int, String, Boolean)](input)
+```
+
+--
+
+It works because, when looking for an implicit `RowDecoder[(Int, String, Boolean)]`, the compiler finds `decoder`, and
+realises it can call it.
+
+---
+
+## Using `CellDecoder`, take 3
+
+Why specialise our implicit parameters to `Int`, `String` and `Boolean`?
+
+```tut:silent
+implicit def decoder[A, B, C](implicit da: CellDecoder[A],
+                                       db: CellDecoder[B],
+                                       dc: CellDecoder[C]) =
+  rowDecoder { row ⇒
+    (da.decode(row(0)), db.decode(row(1)), dc.decode(row(2)))
+  }
+```
+
+--
+
+Take a minute to let that sink in:
+
+_We've written an instance of `RowDecoder[(A, B, C)]` for all `A`, `B` and `C` that have a `CellDecoder` instance_.
+
+--
+
+For example:
+
+```tut
+decodeCsv[(Float, String, Boolean)](input)
+```
+
+---
+
+## Optional cells
+
+Sometimes, CSV cells are absent or empty:
+
+```tut
+val input = "1,Nicolas,true\n,Jessica,false\n3,Matt,false"
+```
+
+--
+
+This is what `Option` is made for.
+
+```tut:silent
+implicit def optionCellDecoder[A](implicit da: CellDecoder[A]) = cellDecoder {
+  case "" ⇒ None
+  case s  ⇒ Some(da.decode(s))
+}
+```
+
+---
+
+## Optional cells (2)
+
+This yields the expected result:
+
+```tut
+decodeCsv[(Option[Int], String, Boolean)](input)
+```
+
+--
+
+_We've written an instance of `CellDecoder[Option[A]]` for any `A` that has a `CellDecoder` instance._
+
+---
+
+## Cells with multiple types
+
+"Sometimes", CSV data is messy:
+
+```tut
+val input = "1,Nicolas,true\n2,Jessica,36"
+```
+
+--
+
+We have `Either` to represent these cases:
+
+```tut:silent
+implicit def eitherCellDecoder[A, B](implicit da: CellDecoder[A],
+                                              db: CellDecoder[B]) =
+  cellDecoder { s ⇒
+    try {Left(da.decode(s))}
+    catch { case _: Throwable ⇒ Right(db.decode(s)) }
+  }
+```
+
+---
+
+## Cells with multiple types (2)
+
+This yields the expected result:
+
+```tut
+decodeCsv[(Int, String, Either[Boolean, Int])](input)
+```
+
+--
+
+_We've written an instance of `CellDecoder[Either[A, B]]` for all `A` and `B` that have a `CellDecoder` instance._
+
+---
+
+## Complex compositions
+
+```tut
+val input = "1,Nicolas,true\nfalse,Jessica,false\n,Matt,false"
+```
+
+The first column looks like an `Option[Either[Int, Boolean]]`.
+
+--
+
+We already have `Either` and `Option` instances, so we get this for free:
+
+```tut
+decodeCsv[(Option[Either[Int, Boolean]], String, Boolean)](input)
+```
+
+
+
+---
+
+## Collections of values
+
+We have lost the ability to decode a row as `List[Int]` on the way:
+
+```tut:silent
+val input = "1,2,3\n4,5,6\n7,8,9"
+```
+
+--
+
+Warning - uses `CanBuildFrom`
+
+--
+
+```tut:silent
+import scala.collection.generic.CanBuildFrom
+
+implicit def collectionDecoder[A, C[_]]
+               (implicit da: CellDecoder[A],
+                         cbf: CanBuildFrom[Nothing, A, C[A]]) =
+  rowDecoder(_.foldLeft(cbf.apply()) { (out, s) ⇒
+    out += da.decode(s)
+  }.result())
+```
+
+---
+
+## Collections of values (2)
+
+This yields the expected result, for any collection type:
+
+```tut
+decodeCsv[List[Int]](input)
+```
+
+```tut
+decodeCsv[Vector[Int]](input)
+```
+
+```tut
+decodeCsv[Array[Int]](input)
+```
+
+--
+
+_We've written an instance of `RowDecoder[F[A]]` for any collection `F` and any `A` that has a `CellDecoder` instance._
+
+---
+
+## Case classes
+
+We *could* write a `RowDecoder[A]` instance for any case class `A`…
+
+--
+
+… but I'd have to use [shapeless](http://shapeless.io), and this would turn into a different talk entirely.
+
+---
+
+## Conclusions
+
+Type classes:
+* are great at adding new features to existing types
+
+```tut:silent
+implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
+```
+
+--
+
+* compose implicitly, without having to write any type specific code
+
+```tut
+implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
+```
+
+---
+
+## More information
+
+Find me on Twitter ([`@NicolasRinaudo`](https://twitter.com/NicolasRinaudo)).
+
+Make fun of my code on Github ([`nrinaudo`](https://github.com/nrinaudo/)).
+
+See [kantan.csv](http://nrinaudo.github.io/kantan.csv/) for a concrete, usable implementation.
+
+Get in touch with [`ioSquare`](http://iosquare.com), we're always on the lookout for Scala talent.
+
+
+
+
+---
+class: center, middle
+
+# Thanks!
+
+    </textarea>
+    <script src="js/remark.js" type="text/javascript">
+    </script>
+    <script type="text/javascript">
+        var slideshow = remark.create({
+        highlightStyle: 'solarized-dark'
+      });
+    </script>
+  </body>
+</html>
