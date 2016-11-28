@@ -16,8 +16,12 @@ body {
     word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 
-.remark-slide-content {
-    background:     #ecf0f4;
+.remark-slide-content, .remark-slide-container {
+    background: #ecf0f4;
+}
+
+.remark-slide-scaler {
+    box-shadow: none;
 }
 
 h1, h2, h3 {
