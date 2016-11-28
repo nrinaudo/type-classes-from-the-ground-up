@@ -358,7 +358,7 @@ realises it can call it.
 Why specialise our implicit parameters to `Int` and `String`?
 
 ```tut:silent
-implicit def decoder[A, B, C](implicit da: CellDecoder[A],
+implicit def decoder[A, B](implicit da: CellDecoder[A],
                                        db: CellDecoder[B]) =
   rowDecoder(row ⇒ (da.decode(row(0)), db.decode(row(1))))
 ```
