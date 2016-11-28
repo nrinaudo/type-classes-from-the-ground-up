@@ -376,7 +376,7 @@ realises it can call it.
 Why specialise our implicit parameters to `Int` and `String`?
 
 ```scala
-implicit def decoder[A, B, C](implicit da: CellDecoder[A],
+implicit def decoder[A, B](implicit da: CellDecoder[A],
                                        db: CellDecoder[B]) =
   rowDecoder(row ⇒ (da.decode(row(0)), db.decode(row(1))))
 ```
@@ -581,7 +581,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 scala> implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-res22: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@7bf99132
+res22: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@6008a6ee
 ```
 
 ---
