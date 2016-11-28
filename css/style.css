@@ -1,9 +1,8 @@
-@font-face{
-    font-family: 'm+1m';
-    font-weight: 200;
+@font-face {
+    font-family: 'Source Code Pro';
+    src: url('SourceCodePro-Regular.otf.woff') format('woff');
+    font-weight: normal;
     font-style: normal;
-    font-stretch: normal;
-    src: url('mplus-1m-regular.ttf') format('ttf')
 }
 
 body {
@@ -14,8 +13,11 @@ body {
 	vertical-align: baseline;
 }
 
+.remark-inline-code, .remark-code {
+    font-family: "Source Code Pro";
+}
+
 .remark-code {
-    font-family: "m+1m";
     border-radius: 5px;
     border: 1px solid #dfdedc;
     white-space: pre-wrap;       /* CSS 3 */
