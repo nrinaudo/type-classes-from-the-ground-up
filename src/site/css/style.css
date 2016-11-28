@@ -1,3 +1,11 @@
+@font-face{
+    font-family: 'm+1m';
+    font-weight: 200;
+    font-style: normal;
+    font-stretch: normal;
+    src: url('mplus-1m-regular.ttf') format('ttf')
+}
+
 body {
     font-family:    "Helvetica Neue", Helvetica, Arial, sans-serif;
     margin:         0;
@@ -7,6 +15,7 @@ body {
 }
 
 .remark-code {
+    font-family: "m+1m";
     border-radius: 5px;
     border: 1px solid #dfdedc;
     white-space: pre-wrap;       /* CSS 3 */
