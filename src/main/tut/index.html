@@ -105,8 +105,8 @@ Better, but not great: you have to explicitly specify how to decode types every 
 
 ## Small detour: implicits
 
-> When a function expects a parameter of type `T`, that parameter is marked as implicit and there exists a value of
-> type `T` marked as implicit in scope, then the compiler can use that value automatically.
+> When a function expects a parameter of type `T` _and_ that parameter is marked as implicit _and_ there exists a
+> value of type `T` marked as implicit in scope, then the compiler can use that value automatically.
 
 --
 
@@ -152,8 +152,8 @@ decodeCsv[Int](input)
 
 ## The dangers of implicits
 
-> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit function from `S` to
-> `T` in scope, it will be applied silently.
+> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit `S` ⇒ `T`
+> in scope, it will be applied silently.
 
 This is called implicit conversions and is generally accepted as not a good thing _for the most part_.
 
@@ -207,7 +207,27 @@ decodeCsv[Int](input)
 
 Important realisation: _we've added a new feature to `Int`, even though it's `final`_.
 
-Type classes allow us to extend existing types without subtyping them.
+--
+
+Think about implementing the same with subtyping:
+
+* create a `Decodable` interface.
+
+--
+
+* have `Int` implement `Decodable`.
+
+--
+
+* but `Int` is final...
+
+--
+
+* create... `WrappedInt` that implements `Decodable` and proxies all calls to `Int`?
+
+--
+
+* 😱
 
 
 ---
@@ -270,9 +290,9 @@ def rowDecoder[A](f: List[String] ⇒ A) = new RowDecoder[A] {
 Also, create a bunch of useful `CellDecoder` instances:
 
 ```tut:silent
-implicit val intDecoder = cellDecoder(_.toInt)
-implicit val floatDecoder = cellDecoder(_.toFloat)
-implicit val stringDecoder = cellDecoder(identity)
+implicit val intDecoder     = cellDecoder(_.toInt)
+implicit val floatDecoder   = cellDecoder(_.toFloat)
+implicit val stringDecoder  = cellDecoder(identity)
 implicit val booleanDecoder = cellDecoder(_.toBoolean)
 ```
 
@@ -359,7 +379,7 @@ Why specialise our implicit parameters to `Int` and `String`?
 
 ```tut:silent
 implicit def decoder[A, B](implicit da: CellDecoder[A],
-                                       db: CellDecoder[B]) =
+                                    db: CellDecoder[B]) =
   rowDecoder(row ⇒ (da.decode(row(0)), db.decode(row(1))))
 ```
 
@@ -410,7 +430,7 @@ decodeCsv[(Option[Int], String)](input)
 
 --
 
-_We've written an instance of `CellDecoder[Option[A]]` for any `A` that has a `CellDecoder` instance._
+_We've written an instance of `CellDecoder[Option[A]]` for all `A` that have a `CellDecoder` instance._
 
 ---
 
