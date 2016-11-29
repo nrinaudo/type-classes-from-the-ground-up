@@ -112,8 +112,8 @@ Better, but not great: you have to explicitly specify how to decode types every 
 
 ## Small detour: implicits
 
-> When a function expects a parameter of type `T`, that parameter is marked as implicit and there exists a value of
-> type `T` marked as implicit in scope, then the compiler can use that value automatically.
+> When a function expects a parameter of type `T` _and_ that parameter is marked as implicit _and_ there exists a
+> value of type `T` marked as implicit in scope, then the compiler can use that value automatically.
 
 --
 
@@ -161,8 +161,8 @@ res6: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 
 ## The dangers of implicits
 
-> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit function from `S` to
-> `T` in scope, it will be applied silently.
+> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit `S` ⇒ `T`
+> in scope, it will be applied silently.
 
 This is called implicit conversions and is generally accepted as not a good thing _for the most part_.
 
@@ -219,7 +219,27 @@ res9: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 
 Important realisation: _we've added a new feature to `Int`, even though it's `final`_.
 
-Type classes allow us to extend existing types without subtyping them.
+--
+
+Think about implementing the same with subtyping:
+
+* create a `Decodable` interface.
+
+--
+
+* have `Int` implement `Decodable`.
+
+--
+
+* but `Int` is final...
+
+--
+
+* create... `WrappedInt` that implements `Decodable` and proxies all calls to `Int`?
+
+--
+
+* 😱
 
 
 ---
@@ -286,9 +306,9 @@ def rowDecoder[A](f: List[String] ⇒ A) = new RowDecoder[A] {
 Also, create a bunch of useful `CellDecoder` instances:
 
 ```scala
-implicit val intDecoder = cellDecoder(_.toInt)
-implicit val floatDecoder = cellDecoder(_.toFloat)
-implicit val stringDecoder = cellDecoder(identity)
+implicit val intDecoder     = cellDecoder(_.toInt)
+implicit val floatDecoder   = cellDecoder(_.toFloat)
+implicit val stringDecoder  = cellDecoder(identity)
 implicit val booleanDecoder = cellDecoder(_.toBoolean)
 ```
 
@@ -377,7 +397,7 @@ Why specialise our implicit parameters to `Int` and `String`?
 
 ```scala
 implicit def decoder[A, B](implicit da: CellDecoder[A],
-                                       db: CellDecoder[B]) =
+                                    db: CellDecoder[B]) =
   rowDecoder(row ⇒ (da.decode(row(0)), db.decode(row(1))))
 ```
 
@@ -434,7 +454,7 @@ res15: List[(Option[Int], String)] = List((Some(1),Nicolas), (None,Jessica), (So
 
 --
 
-_We've written an instance of `CellDecoder[Option[A]]` for any `A` that has a `CellDecoder` instance._
+_We've written an instance of `CellDecoder[Option[A]]` for all `A` that have a `CellDecoder` instance._
 
 ---
 
@@ -581,7 +601,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 scala> implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-res22: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@1c5aa548
+res22: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@61db3f4a
 ```
 
 ---
