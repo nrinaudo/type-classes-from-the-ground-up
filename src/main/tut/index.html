@@ -50,7 +50,7 @@ We purposefully ignore the following flaws:
 
 ## Basic example: raw numbers
 
-```tut
+```tut:book
 val input = "1,2,3\n4,5,6\n7,8,9"
 ```
 
@@ -58,7 +58,7 @@ val input = "1,2,3\n4,5,6\n7,8,9"
 
 Running the parser yields:
 
-```tut
+```tut:book
 parseCsv(input)
 ```
 
@@ -70,7 +70,7 @@ Representing clear numeric values as `String`s is unsatisfactory.
 
 ## Improvement: mapping to `Int`
 
-```tut
+```tut:book
 parseCsv(input).map(_.map(_.toInt))
 ```
 
@@ -93,7 +93,7 @@ def decodeCsv[A](input: String)(f: String ⇒ A): List[List[A]] =
 
 Running the decoder yields:
 
-```tut
+```tut:book
 decodeCsv(input)(_.toInt)
 ```
 
@@ -122,7 +122,7 @@ def printInt(implicit i: Int): Unit = println(i)
 
 Running `printInt` without a parameter:
 
-```tut
+```tut:book
 printInt
 ```
 
@@ -144,7 +144,7 @@ implicit val strToInt: String ⇒ Int = Integer.parseInt
 
 Running the decoder without a decoding function yields:
 
-```tut
+```tut:book
 decodeCsv[Int](input)
 ```
 
@@ -159,7 +159,7 @@ This is called implicit conversions and is generally accepted as not a good thin
 
 --
 
-```tut
+```tut:book
 def add1(i: Int): Int = i + 1
 
 add1("123")
@@ -197,7 +197,7 @@ def decodeCsv[A](input: String)
 
 And run it as expected:
 
-```tut
+```tut:book
 decodeCsv[Int](input)
 ```
 
@@ -236,7 +236,7 @@ Think about implementing the same with subtyping:
 
 `decodeCsv` can decode our input. But what about:
 
-```tut
+```tut:book
 val input = "1,Nicolas\n2,Jessica\n3,Matt"
 ```
 
@@ -308,7 +308,7 @@ implicit val decoder = rowDecoder(row ⇒ (row(0).toInt, row(1)))
 
 This works:
 
-```tut
+```tut:book
 decodeCsv[(Int, String)](input)
 ```
 
@@ -362,7 +362,7 @@ implicit def decoder(implicit di: CellDecoder[Int],
 
 This produces the desired result:
 
-```tut
+```tut:book
 decodeCsv[(Int, String)](input)
 ```
 
@@ -393,7 +393,7 @@ _We've written an instance of `RowDecoder[(A, B)]` for all `A` and `B` that have
 
 For example:
 
-```tut
+```tut:book
 decodeCsv[(Float, String)](input)
 ```
 
@@ -403,7 +403,7 @@ decodeCsv[(Float, String)](input)
 
 Sometimes, CSV cells are absent or empty:
 
-```tut
+```tut:book
 val input = "1,Nicolas\n,Jessica\n3,Matt"
 ```
 
@@ -424,7 +424,7 @@ implicit def optionCellDecoder[A](implicit da: CellDecoder[A]) = cellDecoder {
 
 This yields the expected result:
 
-```tut
+```tut:book
 decodeCsv[(Option[Int], String)](input)
 ```
 
@@ -438,7 +438,7 @@ _We've written an instance of `CellDecoder[Option[A]]` for all `A` that have a `
 
 "Sometimes", CSV data is messy:
 
-```tut
+```tut:book
 val input = "1,Nicolas\ntrue,Jessica"
 ```
 
@@ -461,7 +461,7 @@ implicit def eitherCellDecoder[A, B](implicit da: CellDecoder[A],
 
 This yields the expected result:
 
-```tut
+```tut:book
 decodeCsv[(Either[Int, Boolean], String)](input)
 ```
 
@@ -473,7 +473,7 @@ _We've written an instance of `CellDecoder[Either[A, B]]` for all `A` and `B` th
 
 ## Complex compositions
 
-```tut
+```tut:book
 val input = "1,Nicolas\nfalse,Jessica\n,Matt"
 ```
 
@@ -483,7 +483,7 @@ The first column looks like an `Option[Either[Int, Boolean]]`.
 
 We already have `Either` and `Option` instances, so we get this for free:
 
-```tut
+```tut:book
 decodeCsv[(Option[Either[Int, Boolean]], String)](input)
 ```
 
@@ -522,15 +522,15 @@ implicit def collectionDecoder[A, C[_]]
 
 This yields the expected result, for any collection type:
 
-```tut
+```tut:book
 decodeCsv[List[Int]](input)
 ```
 
-```tut
+```tut:book
 decodeCsv[Vector[Int]](input)
 ```
 
-```tut
+```tut:book
 decodeCsv[Array[Int]](input)
 ```
 
@@ -563,7 +563,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 * compose implicitly, without having to write any type specific code
 
-```tut
+```tut:book
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
 ```
 
