@@ -51,11 +51,11 @@ We purposefully ignore the following flaws:
 ## Basic example: raw numbers
 
 ```scala
-scala> val input = "1,2,3\n4,5,6\n7,8,9"
-input: String =
-1,2,3
-4,5,6
-7,8,9
+val input = "1,2,3\n4,5,6\n7,8,9"
+// input: String =
+// 1,2,3
+// 4,5,6
+// 7,8,9
 ```
 
 --
@@ -63,8 +63,8 @@ input: String =
 Running the parser yields:
 
 ```scala
-scala> parseCsv(input)
-res0: List[List[String]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+parseCsv(input)
+// res0: List[List[String]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 --
@@ -76,8 +76,8 @@ Representing clear numeric values as `String`s is unsatisfactory.
 ## Improvement: mapping to `Int`
 
 ```scala
-scala> parseCsv(input).map(_.map(_.toInt))
-res1: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+parseCsv(input).map(_.map(_.toInt))
+// res1: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 --
@@ -100,8 +100,8 @@ def decodeCsv[A](input: String)(f: String ⇒ A): List[List[A]] =
 Running the decoder yields:
 
 ```scala
-scala> decodeCsv(input)(_.toInt)
-res2: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+decodeCsv(input)(_.toInt)
+// res2: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 --
@@ -130,8 +130,8 @@ def printInt(implicit i: Int): Unit = println(i)
 Running `printInt` without a parameter:
 
 ```scala
-scala> printInt
-2
+printInt
+// 2
 ```
 
 ---
@@ -153,8 +153,8 @@ implicit val strToInt: String ⇒ Int = Integer.parseInt
 Running the decoder without a decoding function yields:
 
 ```scala
-scala> decodeCsv[Int](input)
-res6: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+decodeCsv[Int](input)
+// res6: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 ---
@@ -169,11 +169,11 @@ This is called implicit conversions and is generally accepted as not a good thin
 --
 
 ```scala
-scala> def add1(i: Int): Int = i + 1
-add1: (i: Int)Int
+def add1(i: Int): Int = i + 1
+// add1: (i: Int)Int
 
-scala> add1("123")
-res7: Int = 124
+add1("123")
+// res7: Int = 124
 ```
 
 ---
@@ -209,8 +209,8 @@ def decodeCsv[A](input: String)
 And run it as expected:
 
 ```scala
-scala> decodeCsv[Int](input)
-res9: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+decodeCsv[Int](input)
+// res9: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 ---
@@ -249,11 +249,11 @@ Think about implementing the same with subtyping:
 `decodeCsv` can decode our input. But what about:
 
 ```scala
-scala> val input = "1,Nicolas\n2,Jessica\n3,Matt"
-input: String =
-1,Nicolas
-2,Jessica
-3,Matt
+val input = "1,Nicolas\n2,Jessica\n3,Matt"
+// input: String =
+// 1,Nicolas
+// 2,Jessica
+// 3,Matt
 ```
 
 --
@@ -325,8 +325,8 @@ implicit val decoder = rowDecoder(row ⇒ (row(0).toInt, row(1)))
 This works:
 
 ```scala
-scala> decodeCsv[(Int, String)](input)
-res12: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
+decodeCsv[(Int, String)](input)
+// res12: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
 ```
 
 --
@@ -380,8 +380,8 @@ implicit def decoder(implicit di: CellDecoder[Int],
 This produces the desired result:
 
 ```scala
-scala> decodeCsv[(Int, String)](input)
-res13: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
+decodeCsv[(Int, String)](input)
+// res13: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
 ```
 
 --
@@ -412,8 +412,8 @@ _We've written an instance of `RowDecoder[(A, B)]` for all `A` and `B` that have
 For example:
 
 ```scala
-scala> decodeCsv[(Float, String)](input)
-res14: List[(Float, String)] = List((1.0,Nicolas), (2.0,Jessica), (3.0,Matt))
+decodeCsv[(Float, String)](input)
+// res14: List[(Float, String)] = List((1.0,Nicolas), (2.0,Jessica), (3.0,Matt))
 ```
 
 ---
@@ -423,11 +423,11 @@ res14: List[(Float, String)] = List((1.0,Nicolas), (2.0,Jessica), (3.0,Matt))
 Sometimes, CSV cells are absent or empty:
 
 ```scala
-scala> val input = "1,Nicolas\n,Jessica\n3,Matt"
-input: String =
-1,Nicolas
-,Jessica
-3,Matt
+val input = "1,Nicolas\n,Jessica\n3,Matt"
+// input: String =
+// 1,Nicolas
+// ,Jessica
+// 3,Matt
 ```
 
 --
@@ -448,8 +448,8 @@ implicit def optionCellDecoder[A](implicit da: CellDecoder[A]) = cellDecoder {
 This yields the expected result:
 
 ```scala
-scala> decodeCsv[(Option[Int], String)](input)
-res15: List[(Option[Int], String)] = List((Some(1),Nicolas), (None,Jessica), (Some(3),Matt))
+decodeCsv[(Option[Int], String)](input)
+// res15: List[(Option[Int], String)] = List((Some(1),Nicolas), (None,Jessica), (Some(3),Matt))
 ```
 
 --
@@ -463,10 +463,10 @@ _We've written an instance of `CellDecoder[Option[A]]` for all `A` that have a `
 "Sometimes", CSV data is messy:
 
 ```scala
-scala> val input = "1,Nicolas\ntrue,Jessica"
-input: String =
-1,Nicolas
-true,Jessica
+val input = "1,Nicolas\ntrue,Jessica"
+// input: String =
+// 1,Nicolas
+// true,Jessica
 ```
 
 --
@@ -489,8 +489,8 @@ implicit def eitherCellDecoder[A, B](implicit da: CellDecoder[A],
 This yields the expected result:
 
 ```scala
-scala> decodeCsv[(Either[Int, Boolean], String)](input)
-res16: List[(Either[Int,Boolean], String)] = List((Left(1),Nicolas), (Right(true),Jessica))
+decodeCsv[(Either[Int, Boolean], String)](input)
+// res16: List[(Either[Int,Boolean], String)] = List((Left(1),Nicolas), (Right(true),Jessica))
 ```
 
 --
@@ -502,11 +502,11 @@ _We've written an instance of `CellDecoder[Either[A, B]]` for all `A` and `B` th
 ## Complex compositions
 
 ```scala
-scala> val input = "1,Nicolas\nfalse,Jessica\n,Matt"
-input: String =
-1,Nicolas
-false,Jessica
-,Matt
+val input = "1,Nicolas\nfalse,Jessica\n,Matt"
+// input: String =
+// 1,Nicolas
+// false,Jessica
+// ,Matt
 ```
 
 The first column looks like an `Option[Either[Int, Boolean]]`.
@@ -516,8 +516,8 @@ The first column looks like an `Option[Either[Int, Boolean]]`.
 We already have `Either` and `Option` instances, so we get this for free:
 
 ```scala
-scala> decodeCsv[(Option[Either[Int, Boolean]], String)](input)
-res17: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1)),Nicolas), (Some(Right(false)),Jessica), (None,Matt))
+decodeCsv[(Option[Either[Int, Boolean]], String)](input)
+// res17: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1)),Nicolas), (Some(Right(false)),Jessica), (None,Matt))
 ```
 
 
@@ -556,18 +556,18 @@ implicit def collectionDecoder[A, C[_]]
 This yields the expected result, for any collection type:
 
 ```scala
-scala> decodeCsv[List[Int]](input)
-res19: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+decodeCsv[List[Int]](input)
+// res19: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 ```scala
-scala> decodeCsv[Vector[Int]](input)
-res20: List[Vector[Int]] = List(Vector(1, 2, 3), Vector(4, 5, 6), Vector(7, 8, 9))
+decodeCsv[Vector[Int]](input)
+// res20: List[Vector[Int]] = List(Vector(1, 2, 3), Vector(4, 5, 6), Vector(7, 8, 9))
 ```
 
 ```scala
-scala> decodeCsv[Array[Int]](input)
-res21: List[Array[Int]] = List(Array(1, 2, 3), Array(4, 5, 6), Array(7, 8, 9))
+decodeCsv[Array[Int]](input)
+// res21: List[Array[Int]] = List(Array(1, 2, 3), Array(4, 5, 6), Array(7, 8, 9))
 ```
 
 --
@@ -600,8 +600,8 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 * compose implicitly, without having to write any type specific code
 
 ```scala
-scala> implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-res22: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@61db3f4a
+implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
+// res22: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@7b20eecf
 ```
 
 ---
