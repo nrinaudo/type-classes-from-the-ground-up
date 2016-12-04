@@ -358,10 +358,10 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 
 There's another rule used in implicit resolution:
 
-> When the compiler looks for an implicit values of type `T` and finds a function that returns a `T` that it can call,
-> it will use its return value.
+> When the compiler looks for an implicit values of type `T` and finds an implicit function that returns a `T` that
+> it can call, it will use its return value.
 
-Of interest to us: a function that returns a `T` and that takes implicit parameters that can all be fulfilled.
+Of interest to us: an implicit function that returns a `T` and that takes implicit parameters that can all be fulfilled.
 
 ---
 
@@ -529,7 +529,10 @@ decodeCsv[(Option[Either[Int, Boolean]], String)](input)
 We have lost the ability to decode a row as `List[Int]` on the way:
 
 ```scala
-val input = "1,2,3\n4,5,6\n7,8,9"
+val input = "1,2,3\n4,5,6"
+// input: String =
+// 1,2,3
+// 4,5,6
 ```
 
 --
@@ -557,17 +560,17 @@ This yields the expected result, for any collection type:
 
 ```scala
 decodeCsv[List[Int]](input)
-// res19: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+// res19: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6))
 ```
 
 ```scala
 decodeCsv[Vector[Int]](input)
-// res20: List[Vector[Int]] = List(Vector(1, 2, 3), Vector(4, 5, 6), Vector(7, 8, 9))
+// res20: List[Vector[Int]] = List(Vector(1, 2, 3), Vector(4, 5, 6))
 ```
 
 ```scala
 decodeCsv[Array[Int]](input)
-// res21: List[Array[Int]] = List(Array(1, 2, 3), Array(4, 5, 6), Array(7, 8, 9))
+// res21: List[Array[Int]] = List(Array(1, 2, 3), Array(4, 5, 6))
 ```
 
 --
@@ -601,7 +604,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res22: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@7b20eecf
+// res22: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@1b96c8e1
 ```
 
 ---
