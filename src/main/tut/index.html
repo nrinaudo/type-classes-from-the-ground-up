@@ -341,10 +341,10 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 
 There's another rule used in implicit resolution:
 
-> When the compiler looks for an implicit values of type `T` and finds a function that returns a `T` that it can call,
-> it will use its return value.
+> When the compiler looks for an implicit values of type `T` and finds an implicit function that returns a `T` that
+> it can call, it will use its return value.
 
-Of interest to us: a function that returns a `T` and that takes implicit parameters that can all be fulfilled.
+Of interest to us: an implicit function that returns a `T` and that takes implicit parameters that can all be fulfilled.
 
 ---
 
@@ -495,8 +495,8 @@ decodeCsv[(Option[Either[Int, Boolean]], String)](input)
 
 We have lost the ability to decode a row as `List[Int]` on the way:
 
-```tut:silent
-val input = "1,2,3\n4,5,6\n7,8,9"
+```tut:book
+val input = "1,2,3\n4,5,6"
 ```
 
 --
