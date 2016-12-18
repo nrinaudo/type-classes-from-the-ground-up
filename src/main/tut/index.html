@@ -559,6 +559,8 @@ implicit def collectionDecoder[A, C[_]]
     out += da.decode(s)
   }.result())
 ```
+<!-- COMMENT -->
+
 
 ---
 
@@ -591,6 +593,7 @@ We *could* write a `RowDecoder[A]` instance for any case class `A`…
 --
 
 … but I'd have to use [shapeless](http://shapeless.io), and this would turn into a different talk entirely.
+<!-- COMMENT -->
 
 ---
 
