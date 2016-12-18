@@ -261,6 +261,7 @@ Think about implementing the same with subtyping:
 --
 
 * 😱
+<!-- COMMENT -->
 
 
 ---
@@ -300,6 +301,8 @@ def decodeCsv[A](input: String)
                 (implicit da: RowDecoder[A]): List[A] =
   parseCsv(input).map(da.decode)
 ```
+<!-- COMMENT possible use for context bounds? -->
+
 
 ---
 
@@ -328,6 +331,12 @@ implicit val floatDecoder   = cellDecoder(_.toFloat)
 implicit val stringDecoder  = cellDecoder(identity)
 implicit val booleanDecoder = cellDecoder(_.toBoolean)
 ```
+
+<!-- COMMENT: earlier in the talk you mentioned the pitfalls of implicit scope,
+ so perhaps it would be best to enclose these in an object - module - which is
+ then deliberetly brought into scope. Alternitively these could live in the
+ companion object of the `CellDecoder`. -->
+
 
 ---
 
@@ -367,6 +376,7 @@ implicit val decoder = rowDecoder { row ⇒
 --
 
 The decoder instances are hard-coded - always a sign that things can be made more generic.
+<!-- COMMENT -->
 
 ---
 
@@ -478,6 +488,7 @@ val input = "1,Nicolas\ntrue,Jessica"
 --
 
 We have `Either` to represent these cases:
+<!-- COMMENT mention biasing? -->
 
 ```tut:silent
 implicit def eitherCellDecoder[A, B](implicit da: CellDecoder[A],
