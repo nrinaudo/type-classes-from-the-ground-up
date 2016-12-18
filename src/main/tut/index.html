@@ -18,7 +18,7 @@ Nicolas Rinaudo • [`@NicolasRinaudo`](https://twitter.com/NicolasRinaudo) • 
 ## Goals
 
 * Understand what purpose type classes serve
-* Get a feel for  implicit composition
+* Get a feel for implicit composition
 
 --
 
@@ -64,6 +64,8 @@ parseCsv(input)
 
 --
 
+<!-- COMMENT -->
+
 Representing clear numeric values as `String`s is unsatisfactory.
 
 ---
@@ -99,11 +101,15 @@ decodeCsv(input)(_.toInt)
 
 --
 
-Better, but not great: you have to explicitly specify how to decode types every time.
+<!-- COMMENT -->
+
+Better, but not great: one has have to manually convert the value to the desired type every time.
 
 ---
 
 ## Small detour: implicits
+
+<!-- COMMENT: using the word implicit to describe implicits seems sub-optiomal? -->
 
 > When a function expects a parameter of type `T` _and_ that parameter is marked as implicit _and_ there exists a
 > value of type `T` marked as implicit in scope, then the compiler can use that value automatically.
@@ -125,6 +131,9 @@ Running `printInt` without a parameter:
 ```tut:book
 printInt
 ```
+
+<!-- COMMENT: It *might* be worth mentioning context bounds here, as it would cleanup some of the later code examples -->
+
 
 ---
 
@@ -157,6 +166,21 @@ decodeCsv[Int](input)
 
 This is called implicit conversions and is generally accepted as not a good thing _for the most part_.
 
+<!-- COMMENT:
+  as a scala users, we both know what this means.
+  depending upon the audience, this might need some fleshing out.
+  Why is it only a good thing some of the time?
+
+  More broadly, i'd recomend avoiding generalities in slide content
+  as specific items read better / are more valuble for people who did
+  not attend the talk in-person (i.e. use your slides to highligh key
+  items, and then expand on said items verbally. Readers then get the
+  primary points, whilst the in-person audience get the same with added
+  exapansion by you the presenter.)
+-->
+
+
+
 --
 
 ```tut:book
@@ -165,11 +189,16 @@ def add1(i: Int): Int = i + 1
 add1("123")
 ```
 
+<!-- COMMENT: As you're mentioning this, it might be worth a small mention that
+ not only can this lead to unexpected program behaviour, implicit search is currently
+ one of the slowest parts of the scala compiller, so having large numbers of imports
+ that bring implicit functions into scope will slow the compilation of that unit significantly -->
+
 ---
 
 ## Finally: type classes
 
-To avoid pluging into the implicit conversion mechanism, declare a dedicated type:
+To avoid the pitfalls of arbitrary implicit conversions, declare a dedicated type:
 
 ```tut:silent
 trait CellDecoder[T] {
@@ -188,10 +217,13 @@ implicit val intDecoder: CellDecoder[Int] = new CellDecoder[Int] {
 We can now rewrite `decodeCsv`:
 
 ```tut:silent
-def decodeCsv[A](input: String)
-                (implicit da: CellDecoder[A]): List[List[A]] =
-  parseCsv(input).map(_.map(da.decode))
+def decodeCsv[A : CellDecoder](input: String): List[List[A]] =
+  parseCsv(input).map(_.map(implicitly.decode))
 ```
+
+<!-- COMMENT: As per the note earlier in the file this might be better as a context bound?
+ certainly, this syntax is common in scala codebases these days, so however you decide
+ to poisition this part, I think its worth a mention :-) -->
 
 --
 
@@ -205,6 +237,7 @@ decodeCsv[Int](input)
 
 ## Enhancement without inheritance!
 
+<!-- COMMENT -->
 Important realisation: _we've added a new feature to `Int`, even though it's `final`_.
 
 --
