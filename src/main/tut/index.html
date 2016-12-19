@@ -18,7 +18,7 @@ Nicolas Rinaudo • [`@NicolasRinaudo`](https://twitter.com/NicolasRinaudo) • 
 ## Goals
 
 * Understand what purpose type classes serve
-* Get a feel for  implicit composition
+* Get a feel for implicit composition
 
 --
 
@@ -99,18 +99,16 @@ decodeCsv(input)(_.toInt)
 
 --
 
-Better, but not great: you have to explicitly specify how to decode types every time.
+Better, but not great: one has to manually convert values to the desired type every time.
 
 ---
 
-## Small detour: implicits
+## Small detour: implicit resolution
 
-> When a function expects a parameter of type `T` _and_ that parameter is marked as implicit _and_ there exists a
-> value of type `T` marked as implicit in scope, then the compiler can use that value automatically.
+> When a function expects a parameter of type `T` _and_ that parameter is marked as `implicit` _and_ there exists a
+> value of type `T` marked as `implicit` in scope, then the compiler can use that value automatically.
 
 --
-
-Example:
 
 ```tut:silent
 implicit val a: Int = 2
@@ -155,7 +153,7 @@ decodeCsv[Int](input)
 > When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit `S` ⇒ `T`
 > in scope, it will be applied silently.
 
-This is called implicit conversions and is generally accepted as not a good thing _for the most part_.
+This is called implicit conversion, and can result in some tricky behaviours:
 
 --
 
@@ -165,11 +163,16 @@ def add1(i: Int): Int = i + 1
 add1("123")
 ```
 
+???
+
+* Implicit search is also one of the slowest parts of the compiler. Bringing implicit functions in scope can
+  slow compilation quite a bit.
+
 ---
 
 ## Finally: type classes
 
-To avoid pluging into the implicit conversion mechanism, declare a dedicated type:
+To avoid the pitfalls of arbitrary implicit conversions, declare a dedicated type:
 
 ```tut:silent
 trait CellDecoder[T] {
@@ -201,11 +204,21 @@ And run it as expected:
 decodeCsv[Int](input)
 ```
 
+???
+
+There is better syntax for this: context bounds
+
+```tut:silent
+def decodeCsv2[A: CellDecoder](input: String): List[List[A]] =
+  parseCsv(input).map(_.map(implicitly[CellDecoder[A]].decode))
+```
+
+
 ---
 
 ## Enhancement without inheritance!
 
-Important realisation: _we've added a new feature to `Int`, even though it's `final`_.
+Important realisation: _we've added a new behaviour to `Int`, even though it's `final`_.
 
 --
 
@@ -295,6 +308,10 @@ implicit val floatDecoder   = cellDecoder(_.toFloat)
 implicit val stringDecoder  = cellDecoder(identity)
 implicit val booleanDecoder = cellDecoder(_.toBoolean)
 ```
+
+???
+
+Default instances should be declared in the companion object, it's just not very convenient here.
 
 ---
 
@@ -412,10 +429,11 @@ val input = "1,Nicolas\n,Jessica\n3,Matt"
 This is what `Option` is made for.
 
 ```tut:silent
-implicit def optionCellDecoder[A](implicit da: CellDecoder[A]) = cellDecoder {
-  case "" ⇒ None
-  case s  ⇒ Some(da.decode(s))
-}
+implicit def optionCellDecoder[A](implicit da: CellDecoder[A]) =
+  cellDecoder {
+    case "" ⇒ None
+    case s  ⇒ Some(da.decode(s))
+  }
 ```
 
 ---
@@ -454,6 +472,10 @@ implicit def eitherCellDecoder[A, B](implicit da: CellDecoder[A],
     catch { case _: Throwable ⇒ Right(db.decode(s)) }
   }
 ```
+
+???
+
+* Mention alternative `Either` encodings, such as `scalaz.\/`
 
 ---
 
@@ -501,9 +523,36 @@ val input = "1,2,3\n4,5,6"
 
 --
 
-Warning - uses `CanBuildFrom`
+Easily fixed:
+
+```tut:silent
+implicit def listDecoder[A](implicit da: CellDecoder[A]) =
+  rowDecoder(_.foldLeft(List.newBuilder[A]) { (acc, s) ⇒
+    acc += da.decode(s)
+  }.result())
+```
+
+---
+
+## Collections of values (2)
+
+This yields the expected result:
+
+```tut:book
+decodeCsv[List[Int]](input)
+```
 
 --
+
+_We've written an instance of `RowDecoder[List[A]]` for any `A` that has a `CellDecoder` instance._
+
+--
+
+We could do it for _any collection type_ by using
+[`CanBuildFrom`](http://www.scala-lang.org/api/2.11.8/#scala.collection.generic.CanBuildFrom), but it relies on a few
+advanced concepts that are off-topic here.
+
+???
 
 ```tut:silent
 import scala.collection.generic.CanBuildFrom
@@ -515,28 +564,6 @@ implicit def collectionDecoder[A, C[_]]
     out += da.decode(s)
   }.result())
 ```
-
----
-
-## Collections of values (2)
-
-This yields the expected result, for any collection type:
-
-```tut:book
-decodeCsv[List[Int]](input)
-```
-
-```tut:book
-decodeCsv[Vector[Int]](input)
-```
-
-```tut:book
-decodeCsv[Array[Int]](input)
-```
-
---
-
-_We've written an instance of `RowDecoder[F[A]]` for any collection `F` and any `A` that has a `CellDecoder` instance._
 
 ---
 
@@ -553,7 +580,7 @@ We *could* write a `RowDecoder[A]` instance for any case class `A`…
 ## Conclusions
 
 Type classes:
-* are great at adding new features to existing types
+* are great at adding new behaviours to existing types
 
 ```tut:silent
 implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
