@@ -24,7 +24,7 @@ Nicolas Rinaudo • [`@NicolasRinaudo`](https://twitter.com/NicolasRinaudo) • 
 
 ## Running example: CSV parser
 
-CSV data is composed of rows and columns
+CSV data is composed of rows, each row is composed of cells.
 
 ```csv
 1,Nicolas,Rinaudo
@@ -45,6 +45,10 @@ We purposefully ignore the following flaws:
 
 * cannot handle "complex" CSV data
 * inefficient, both in terms of CPU and memory
+
+???
+
+For a real-life scenario, we could consider relegating the parsing to a dedicated library like jackson-csv.
 
 ---
 
@@ -106,7 +110,14 @@ Better, but not great: one has to manually convert values to the desired type ev
 ## Small detour: implicit resolution
 
 > When a function expects a parameter of type `T` _and_ that parameter is marked as `implicit` _and_ there exists a
-> value of type `T` marked as `implicit` in scope, then the compiler can use that value automatically.
+> value of type `T` marked as `implicit` in scope, then the compiler will use that value.
+
+???
+
+This is very simplified. We could also talk about:
+- implicit scope
+- when two acceptable implicit values are found, priority rules apply
+- when two acceptable implicit values are found with the same priority, compilation fails.
 
 --
 
@@ -146,6 +157,15 @@ Running the decoder without a decoding function yields:
 decodeCsv[Int](input)
 ```
 
+???
+
+This is the first time explicit type parameters are used. Does everyone understand that syntax?
+
+- a function has two kinds of parameters: types and values
+- types are usually inferred and do not need to be specified
+- it's possible and sometimes necessary to pass them explicitly
+
+
 ---
 
 ## The dangers of implicits
@@ -170,7 +190,7 @@ add1("123")
 
 ---
 
-## Finally: type classes
+## Using a decoder type
 
 To avoid the pitfalls of arbitrary implicit conversions, declare a dedicated type:
 
@@ -183,6 +203,10 @@ implicit val intDecoder: CellDecoder[Int] = new CellDecoder[Int] {
   override def decode(cell: String) = cell.toInt
 }
 ```
+
+--
+
+We just invented _type classes_.
 
 ---
 
@@ -206,13 +230,7 @@ decodeCsv[Int](input)
 
 ???
 
-There is better syntax for this: context bounds
-
-```tut:silent
-def decodeCsv2[A: CellDecoder](input: String): List[List[A]] =
-  parseCsv(input).map(_.map(implicitly[CellDecoder[A]].decode))
-```
-
+There is a better syntax for this: context bounds.
 
 ---
 
@@ -318,7 +336,7 @@ Default instances should be declared in the companion object, it's just not very
 ## First attempt at decoding tuples
 
 ```tut:silent
-implicit val decoder: RowDecoder[(Int, String)] =
+implicit val tupleDecoder: RowDecoder[(Int, String)] =
   rowDecoder(cells ⇒ (cells(0).toInt, cells(1)))
 ```
 
@@ -343,7 +361,7 @@ Didn't we just write a mechanism for that?
 Naive implementation:
 
 ```tut:silent
-implicit val decoder: RowDecoder[(Int, String)] =
+implicit val tupleDecoder: RowDecoder[(Int, String)] =
   rowDecoder { cells ⇒ (
     intDecoder.decode(cells(0)),
     stringDecoder.decode(cells(1))
@@ -372,7 +390,7 @@ Of interest to us: an implicit function that returns a `T` and that takes implic
 Better implementation:
 
 ```tut:silent
-implicit def decoder(
+implicit def tupleDecoder(
     implicit di: CellDecoder[Int],
              ds: CellDecoder[String]
   ): RowDecoder[(Int, String)] =
@@ -389,22 +407,26 @@ decodeCsv[(Int, String)](input)
 
 --
 
-It works because, when looking for an implicit `RowDecoder[(Int, String)]`, the compiler finds `decoder`, and
-realises it can call it.
+The decoded types are hard-coded, but not used - a strong hint that we should use type parameters.
 
 ---
 
 ## Using `CellDecoder`, take 3
 
-Why specialise our implicit parameters to `Int` and `String`?
+Fully generic implementation:
 
 ```tut:silent
-implicit def decoder[A, B](
+implicit def tupleDecoder[A, B](
     implicit da: CellDecoder[A],
              db: CellDecoder[B]
   ): RowDecoder[(A, B)] =
   rowDecoder(cells ⇒ (da.decode(cells(0)), db.decode(cells(1))))
 ```
+
+???
+
+You can think of the implicit parameters as constraints on `A` and `B` - `decode` accepts any two types `A` and `B`
+that fulfill the constraint of being decodable as cells.
 
 --
 
@@ -412,13 +434,36 @@ Take a minute to let that sink in:
 
 _We've written an instance of `RowDecoder[(A, B)]` for all `A` and `B` that have a `CellDecoder` instance_.
 
---
 
-For example:
+---
+
+## Demystifying the magic
 
 ```tut:book
 decodeCsv[(Float, String)](input)
 ```
+
+--
+
+Implicit resolution steps:
+
+--
+
+
+```tut:silent
+decodeCsv(input)(tupleDecoder[Float, String])
+```
+
+--
+
+```tut:silent
+decodeCsv(input)(tupleDecoder(floatDecoder, stringDecoder))
+```
+
+???
+
+Interesting how the type parameters move to the right and disappear as the compiler uses more and more specialised
+instances.
 
 ---
 
@@ -457,6 +502,38 @@ decodeCsv[(Option[Int], String)](input)
 --
 
 _We've written an instance of `CellDecoder[Option[A]]` for all `A` that have a `CellDecoder` instance._
+
+---
+
+## Optional cells (3)
+
+Implicit resolution steps:
+
+```tut:silent
+decodeCsv[(Option[Int], String)](input)
+```
+
+--
+
+```tut:silent
+decodeCsv(input)(tupleDecoder[Option[Int], String])
+```
+
+--
+
+```tut:silent
+decodeCsv(input)(tupleDecoder(optionCellDecoder[Int], stringDecoder))
+```
+
+--
+
+```tut:silent
+decodeCsv(input)(tupleDecoder(
+  optionCellDecoder(intDecoder),
+  stringDecoder
+))
+```
+
 
 ---
 
@@ -499,6 +576,44 @@ decodeCsv[(Either[Int, Boolean], String)](input)
 --
 
 _We've written an instance of `CellDecoder[Either[A, B]]` for all `A` and `B` that have a `CellDecoder` instance._
+
+---
+
+## Cells with multiple types (3)
+
+Implicit resolution steps:
+
+```tut:silent
+decodeCsv[(Either[Int, Boolean], String)](input)
+```
+
+--
+
+```tut:silent
+decodeCsv(input)(tupleDecoder[Either[Int, Boolean], String])
+```
+
+--
+
+```tut:silent
+decodeCsv(input)(tupleDecoder(
+  eitherCellDecoder[Int, Boolean],
+  stringDecoder
+))
+```
+
+--
+
+```tut:silent
+decodeCsv(input)(tupleDecoder(
+  eitherCellDecoder(intDecoder, booleanDecoder),
+  stringDecoder
+))
+```
+
+???
+
+I think we all get the idea of how implicit resolution works at this point.
 
 ---
 
