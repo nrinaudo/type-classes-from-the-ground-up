@@ -210,9 +210,10 @@ trait CellDecoder[T] {
   def decode(cell: String): T
 }
 
-implicit val intDecoder: CellDecoder[Int] = new CellDecoder[Int] {
-  override def decode(cell: String) = cell.toInt
-}
+implicit val intCellDecoder: CellDecoder[Int] =
+  new CellDecoder[Int] {
+    override def decode(cell: String) = cell.toInt
+  }
 ```
 
 --
@@ -337,10 +338,10 @@ def rowDecoder[A](f: List[String] ⇒ A) = new RowDecoder[A] {
 Also, create a bunch of useful `CellDecoder` instances:
 
 ```scala
-implicit val intDecoder     = cellDecoder(_.toInt)
-implicit val floatDecoder   = cellDecoder(_.toFloat)
-implicit val stringDecoder  = cellDecoder(identity)
-implicit val booleanDecoder = cellDecoder(_.toBoolean)
+implicit val intCellDecoder     = cellDecoder(_.toInt)
+implicit val floatCellDecoder   = cellDecoder(_.toFloat)
+implicit val stringCellDecoder  = cellDecoder(identity)
+implicit val booleanCellDecoder = cellDecoder(_.toBoolean)
 ```
 
 ???
@@ -380,8 +381,8 @@ Naive implementation:
 ```scala
 implicit val tupleDecoder: RowDecoder[(Int, String)] =
   rowDecoder { cells ⇒ (
-    intDecoder.decode(cells(0)),
-    stringDecoder.decode(cells(1))
+    intCellDecoder.decode(cells(0)),
+    stringCellDecoder.decode(cells(1))
   )}
 ```
 
@@ -398,7 +399,31 @@ There's another rule used in implicit resolution:
 > When the compiler looks for an implicit values of type `T` and finds an implicit function that returns a `T` that
 > it can call, it will use its return value.
 
-Of interest to us: an implicit function that returns a `T` and that takes implicit parameters that can all be fulfilled.
+--
+
+```scala
+implicit val double: Double = 3.0
+
+implicit def getFloat(implicit double: Double): Float =
+  double.toFloat
+
+def printFloat(implicit float: Float): Unit = println(float)
+```
+
+--
+Running `printFloat` without a parameter:
+
+```scala
+printFloat
+// 3.0
+```
+
+???
+
+This can be a bit hard to follow, go through the steps:
+- `printFloat` looks for an implicit `Float`
+- `getFloat` might produce an implicit `Float`, but needs an implicit `Double`
+- `double` is an implicit `Double`
 
 ---
 
@@ -420,12 +445,12 @@ This produces the desired result:
 
 ```scala
 decodeCsv[(Int, String)](input)
-// res13: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
+// res16: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
 ```
 
 --
 
-The decoded types are hard-coded, but not used - a strong hint that we should use type parameters.
+`Int` and `String` are hard-coded, but not used - a strong hint that they should be type parameters.
 
 ---
 
@@ -452,31 +477,33 @@ Take a minute to let that sink in:
 
 _We've written an instance of `RowDecoder[(A, B)]` for all `A` and `B` that have a `CellDecoder` instance_.
 
-
 ---
 
-## Demystifying the magic
+## Implicit resolution steps
 
 ```scala
 decodeCsv[(Float, String)](input)
-// res14: List[(Float, String)] = List((1.0,Nicolas), (2.0,Jessica), (3.0,Matt))
+// res17: List[(Float, String)] = List((1.0,Nicolas), (2.0,Jessica), (3.0,Matt))
 ```
 
---
-
-Implicit resolution steps:
+We need an implicit `RowDecoder[(Float, String)]`.
 
 --
 
+`tupleDecoder` might produce one:
 
 ```scala
 decodeCsv(input)(tupleDecoder[Float, String])
 ```
 
+We now need implicit `CellDecoder[Float]` and `CellDecoder[String]` instances.
+
 --
 
+`floatCellDecoder` and `stringCellDecoder` work:
+
 ```scala
-decodeCsv(input)(tupleDecoder(floatDecoder, stringDecoder))
+decodeCsv(input)(tupleDecoder(floatCellDecoder, stringCellDecoder))
 ```
 
 ???
@@ -505,11 +532,10 @@ This is what `Option` is made for.
 ```scala
 implicit def optionCellDecoder[A](
     implicit da: CellDecoder[A]
-  ): CellDecoder[Option[A]] =
-  cellDecoder {
-    case "" ⇒ None
-    case s  ⇒ Some(da.decode(s))
-  }
+  ): CellDecoder[Option[A]] = cellDecoder {
+  case "" ⇒ None
+  case s  ⇒ Some(da.decode(s))
+}
 ```
 
 ---
@@ -520,44 +546,12 @@ This yields the expected result:
 
 ```scala
 decodeCsv[(Option[Int], String)](input)
-// res17: List[(Option[Int], String)] = List((Some(1),Nicolas), (None,Jessica), (Some(3),Matt))
+// res20: List[(Option[Int], String)] = List((Some(1),Nicolas), (None,Jessica), (Some(3),Matt))
 ```
 
 --
 
 _We've written an instance of `CellDecoder[Option[A]]` for all `A` that have a `CellDecoder` instance._
-
----
-
-## Optional cells (3)
-
-Implicit resolution steps:
-
-```scala
-decodeCsv[(Option[Int], String)](input)
-```
-
---
-
-```scala
-decodeCsv(input)(tupleDecoder[Option[Int], String])
-```
-
---
-
-```scala
-decodeCsv(input)(tupleDecoder(optionCellDecoder[Int], stringDecoder))
-```
-
---
-
-```scala
-decodeCsv(input)(tupleDecoder(
-  optionCellDecoder(intDecoder),
-  stringDecoder
-))
-```
-
 
 ---
 
@@ -598,50 +592,12 @@ This yields the expected result:
 
 ```scala
 decodeCsv[(Either[Int, Boolean], String)](input)
-// res22: List[(Either[Int,Boolean], String)] = List((Left(1),Nicolas), (Right(true),Jessica))
+// res21: List[(Either[Int,Boolean], String)] = List((Left(1),Nicolas), (Right(true),Jessica))
 ```
 
 --
 
 _We've written an instance of `CellDecoder[Either[A, B]]` for all `A` and `B` that have a `CellDecoder` instance._
-
----
-
-## Cells with multiple types (3)
-
-Implicit resolution steps:
-
-```scala
-decodeCsv[(Either[Int, Boolean], String)](input)
-```
-
---
-
-```scala
-decodeCsv(input)(tupleDecoder[Either[Int, Boolean], String])
-```
-
---
-
-```scala
-decodeCsv(input)(tupleDecoder(
-  eitherCellDecoder[Int, Boolean],
-  stringDecoder
-))
-```
-
---
-
-```scala
-decodeCsv(input)(tupleDecoder(
-  eitherCellDecoder(intDecoder, booleanDecoder),
-  stringDecoder
-))
-```
-
-???
-
-I think we all get the idea of how implicit resolution works at this point.
 
 ---
 
@@ -663,7 +619,7 @@ We already have `Either` and `Option` instances, so we get this for free:
 
 ```scala
 decodeCsv[(Option[Either[Int, Boolean]], String)](input)
-// res27: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1)),Nicolas), (Some(Right(false)),Jessica), (None,Matt))
+// res22: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1)),Nicolas), (Some(Right(false)),Jessica), (None,Matt))
 ```
 
 
@@ -702,7 +658,7 @@ This yields the expected result:
 
 ```scala
 decodeCsv[List[Int]](input)
-// res28: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6))
+// res23: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6))
 ```
 
 --
@@ -755,7 +711,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res30: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@525274a3
+// res25: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@13fbe5ac
 ```
 
 ---
@@ -770,7 +726,7 @@ See [kantan.csv](http://nrinaudo.github.io/kantan.csv/) for a concrete, usable i
 
 Get in touch with [`ioSquare`](http://iosquare.com), we're always on the lookout for Scala talent
 
-Presentation backed by [remark.js](https://remarkjs.com/) and Rob Norris' amazing [tut](https://github.com/tpolecat/tut)
+Slides backed by [remark.js](https://remarkjs.com/) and Rob Norris' amazing [tut](https://github.com/tpolecat/tut)
 
 
 
