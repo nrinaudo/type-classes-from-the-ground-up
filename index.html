@@ -402,12 +402,12 @@ There's another rule used in implicit resolution:
 --
 
 ```scala
-implicit val double: Double = 3.0
+implicit val d: Double = 3.0
 
-implicit def getFloat(implicit double: Double): Float =
-  double.toFloat
+implicit def getFloat(implicit d: Double): Float =
+  d.toFloat
 
-def printFloat(implicit float: Float): Unit = println(float)
+def printFloat(implicit f: Float): Unit = println(f)
 ```
 
 --
@@ -711,7 +711,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res25: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@13fbe5ac
+// res25: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@529973c1
 ```
 
 ---
