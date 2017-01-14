@@ -143,6 +143,14 @@ printInt
 // 2
 ```
 
+--
+
+Strictly equivalent to:
+
+```scala
+printInt(a)
+```
+
 ---
 
 ## Decoding CSV with implicits
@@ -163,7 +171,7 @@ Running the decoder without a decoding function yields:
 
 ```scala
 decodeCsv[Int](input)
-// res6: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+// res7: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 ???
@@ -191,7 +199,15 @@ def add1(i: Int): Int = i + 1
 // add1: (i: Int)Int
 
 add1("123")
-// res7: Int = 124
+// res8: Int = 124
+```
+
+--
+
+Strictly equivalent to:
+
+```scala
+add1(strToInt("123"))
 ```
 
 ???
@@ -238,7 +254,7 @@ And run it as expected:
 
 ```scala
 decodeCsv[Int](input)
-// res9: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+// res11: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 ???
@@ -363,7 +379,7 @@ This works:
 
 ```scala
 decodeCsv[(Int, String)](input)
-// res12: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
+// res14: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
 ```
 
 --
@@ -394,8 +410,6 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 
 ## Another look at implicit resolution
 
-There's another rule used in implicit resolution:
-
 > When the compiler looks for an implicit values of type `T` and finds an implicit function that returns a `T` that
 > it can call, it will use its return value.
 
@@ -404,18 +418,26 @@ There's another rule used in implicit resolution:
 ```scala
 implicit val d: Double = 3.0
 
-implicit def getFloat(implicit d: Double): Float =
-  d.toFloat
+implicit def getFloat(implicit d: Double): Float = d.toFloat
 
 def printFloat(implicit f: Float): Unit = println(f)
 ```
 
 --
+
 Running `printFloat` without a parameter:
 
 ```scala
 printFloat
 // 3.0
+```
+
+--
+
+Strictly equivalent to:
+
+```scala
+printFloat(getFloat(d))
 ```
 
 ???
@@ -445,7 +467,7 @@ This produces the desired result:
 
 ```scala
 decodeCsv[(Int, String)](input)
-// res16: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
+// res19: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
 ```
 
 --
@@ -483,7 +505,7 @@ _We've written an instance of `RowDecoder[(A, B)]` for all `A` and `B` that have
 
 ```scala
 decodeCsv[(Float, String)](input)
-// res17: List[(Float, String)] = List((1.0,Nicolas), (2.0,Jessica), (3.0,Matt))
+// res20: List[(Float, String)] = List((1.0,Nicolas), (2.0,Jessica), (3.0,Matt))
 ```
 
 We need an implicit `RowDecoder[(Float, String)]`.
@@ -546,7 +568,7 @@ This yields the expected result:
 
 ```scala
 decodeCsv[(Option[Int], String)](input)
-// res20: List[(Option[Int], String)] = List((Some(1),Nicolas), (None,Jessica), (Some(3),Matt))
+// res23: List[(Option[Int], String)] = List((Some(1),Nicolas), (None,Jessica), (Some(3),Matt))
 ```
 
 --
@@ -592,7 +614,7 @@ This yields the expected result:
 
 ```scala
 decodeCsv[(Either[Int, Boolean], String)](input)
-// res21: List[(Either[Int,Boolean], String)] = List((Left(1),Nicolas), (Right(true),Jessica))
+// res24: List[(Either[Int,Boolean], String)] = List((Left(1),Nicolas), (Right(true),Jessica))
 ```
 
 --
@@ -619,7 +641,7 @@ We already have `Either` and `Option` instances, so we get this for free:
 
 ```scala
 decodeCsv[(Option[Either[Int, Boolean]], String)](input)
-// res22: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1)),Nicolas), (Some(Right(false)),Jessica), (None,Matt))
+// res25: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1)),Nicolas), (Some(Right(false)),Jessica), (None,Matt))
 ```
 
 
@@ -639,16 +661,24 @@ val input = "1,2,3\n4,5,6"
 
 --
 
-Easily fixed:
+"Easily" fixed (warning -
+uses [`CanBuildFrom`](http://www.scala-lang.org/api/2.11.8/#scala.collection.generic.CanBuildFrom)):
 
 ```scala
-implicit def listDecoder[A](
-  implicit da: CellDecoder[A]
-  ): RowDecoder[List[A]] =
-  rowDecoder(_.foldLeft(List.newBuilder[A]) { (acc, cell) ⇒
-    acc += da.decode(cell)
+import scala.collection.generic.CanBuildFrom
+
+implicit def cbfDecoder[A, C[_]](
+    implicit da: CellDecoder[A],
+             cbf: CanBuildFrom[Nothing, A, C[A]]
+  ): RowDecoder[C[A]] =
+  rowDecoder(_.foldLeft(cbf.apply()) { (out, s) ⇒
+    out += da.decode(s)
   }.result())
 ```
+
+???
+
+Ignore the `CanBuildFrom` type - it's needlessly complicated and out of scope.
 
 ---
 
@@ -658,31 +688,18 @@ This yields the expected result:
 
 ```scala
 decodeCsv[List[Int]](input)
-// res23: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6))
+// res27: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6))
+
+decodeCsv[Vector[Int]](input)
+// res28: List[Vector[Int]] = List(Vector(1, 2, 3), Vector(4, 5, 6))
+
+decodeCsv[Array[Int]](input)
+// res29: List[Array[Int]] = List(Array(1, 2, 3), Array(4, 5, 6))
 ```
 
 --
 
-_We've written an instance of `RowDecoder[List[A]]` for any `A` that has a `CellDecoder` instance._
-
---
-
-We could do it for _any collection type_ by using
-[`CanBuildFrom`](http://www.scala-lang.org/api/2.11.8/#scala.collection.generic.CanBuildFrom), but it relies on a few
-advanced concepts that are off-topic here.
-
-???
-
-```scala
-import scala.collection.generic.CanBuildFrom
-
-implicit def collectionDecoder[A, C[_]]
-               (implicit da: CellDecoder[A],
-                         cbf: CanBuildFrom[Nothing, A, C[A]]) =
-  rowDecoder(_.foldLeft(cbf.apply()) { (out, s) ⇒
-    out += da.decode(s)
-  }.result())
-```
+_We've written an instance of `RowDecoder[F[A]]` for any collection `F` and any `A` that has a `CellDecoder` instance._
 
 ---
 
@@ -711,7 +728,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res25: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@529973c1
+// res30: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@3d293f21
 ```
 
 ---
