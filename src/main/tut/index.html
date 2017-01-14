@@ -385,12 +385,12 @@ There's another rule used in implicit resolution:
 --
 
 ```tut:silent
-implicit val double: Double = 3.0
+implicit val d: Double = 3.0
 
-implicit def getFloat(implicit double: Double): Float =
-  double.toFloat
+implicit def getFloat(implicit d: Double): Float =
+  d.toFloat
 
-def printFloat(implicit float: Float): Unit = println(float)
+def printFloat(implicit f: Float): Unit = println(f)
 ```
 
 --
