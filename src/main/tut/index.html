@@ -135,6 +135,14 @@ Running `printInt` without a parameter:
 printInt
 ```
 
+--
+
+Strictly equivalent to:
+
+```tut:silent
+printInt(a)
+```
+
 ---
 
 ## Decoding CSV with implicits
@@ -181,6 +189,14 @@ This is called implicit conversion, and can result in some tricky behaviours:
 def add1(i: Int): Int = i + 1
 
 add1("123")
+```
+
+--
+
+Strictly equivalent to:
+
+```tut:silent
+add1(strToInt("123"))
 ```
 
 ???
@@ -377,8 +393,6 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 
 ## Another look at implicit resolution
 
-There's another rule used in implicit resolution:
-
 > When the compiler looks for an implicit values of type `T` and finds an implicit function that returns a `T` that
 > it can call, it will use its return value.
 
@@ -387,17 +401,25 @@ There's another rule used in implicit resolution:
 ```tut:silent
 implicit val d: Double = 3.0
 
-implicit def getFloat(implicit d: Double): Float =
-  d.toFloat
+implicit def getFloat(implicit d: Double): Float = d.toFloat
 
 def printFloat(implicit f: Float): Unit = println(f)
 ```
 
 --
+
 Running `printFloat` without a parameter:
 
 ```tut:book
 printFloat
+```
+
+--
+
+Strictly equivalent to:
+
+```tut:silent
+printFloat(getFloat(d))
 ```
 
 ???
