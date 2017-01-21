@@ -34,6 +34,12 @@ CSV data is composed of rows, each row is composed of cells.
 
 ---
 
+class: center, middle
+
+# Defining type classes
+
+---
+
 ## Simple CSV parser
 
 ```scala
@@ -129,7 +135,7 @@ This is very simplified. We could also talk about:
 --
 
 ```scala
-implicit val a: Int = 2
+implicit val i: Int = 2
 
 def printInt(implicit i: Int): Unit = println(i)
 ```
@@ -148,7 +154,7 @@ printInt
 Strictly equivalent to:
 
 ```scala
-printInt(a)
+printInt(i)
 ```
 
 ---
@@ -289,6 +295,11 @@ Think about implementing the same with subtyping:
 
 * 😱
 
+---
+
+class: center, middle
+
+# Combining type classe instances
 
 ---
 
@@ -713,6 +724,126 @@ We *could* write a `RowDecoder[A]` instance for any case class `A`…
 
 ---
 
+class: center, middle
+
+# Tips & Tricks
+
+---
+
+## Cell decoding helper
+
+Having a method to decode a string into an arbitrary type would be helpful, if only for REPL debugging:
+
+```scala
+def decodeCell[A](cell: String)(implicit da: CellDecoder[A]): A =
+  da.decode(cell)
+```
+
+--
+
+We can now do:
+
+```scala
+decodeCell[Int]("123")
+// res30: Int = 123
+```
+
+---
+
+## Context bounds
+
+_Context bounds_ offer a more pleasant syntax:
+
+```scala
+def decodeCell[A: CellDecoder](cell: String): A =
+  implicitly[CellDecoder[A]].decode(cell)
+```
+
+--
+
+`decodeCell`'s type signature is now clearer and easier to read.
+
+--
+
+`decodeCell`'s _body_, on the other hand...
+
+---
+
+## Instance summoning methods
+
+It's good practice to provide an instance summoning `apply` method in the companion object:
+
+```scala
+object CellDecoder {
+  def apply[A](implicit da: CellDecoder[A]): CellDecoder[A] = da
+}
+```
+
+--
+
+We can now rewrite `decodeCell`:
+
+```scala
+def decodeCell[A: CellDecoder](cell: String): A =
+  CellDecoder[A].decode(cell)
+```
+
+--
+
+Note that this has a cost - the implicit instance is resolved through a method call.
+
+[Erik Osheim](https://twitter.com/d6/)'s [imp](https://github.com/non/imp) addresses that issue elegantly.
+
+---
+
+## Syntax / operators
+
+We can go even further by enhancing `String` through implicit conversion:
+
+```scala
+case class CellDecoderOps(cell: String) {
+  def decodeCell[A: CellDecoder]: A = CellDecoder[A].decode(cell)
+}
+
+implicit val toCellDecoderOps: String ⇒ CellDecoderOps =
+  CellDecoderOps.apply
+```
+
+--
+
+This lets us write:
+
+```scala
+"123".decodeCell[Int]
+// res32: Int = 123
+```
+
+---
+
+## Syntax / operators (improved)
+
+_Implicit classes_ are syntactic sugar for this:
+
+```scala
+implicit class CellDecoderOps(val cell: String) {
+  def decodeCell[A: CellDecoder]: A = CellDecoder[A].decode(cell)
+}
+```
+
+???
+
+Implicit classes can be tricky - in particular, they can yield some unexpected implicit name clashes.
+
+--
+
+Operators have a cost - boxing and unboxing of values. They can be offset by:
+
+- making the implicit class a value class (`extends AnyVal`).
+- Using [Erik Osheim](https://twitter.com/d6/)'s [machinist](https://github.com/typelevel/machinist).
+
+
+---
+
 ## Conclusions
 
 Type classes:
@@ -728,7 +859,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res30: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@3d293f21
+// res33: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@59cc860d
 ```
 
 ---
