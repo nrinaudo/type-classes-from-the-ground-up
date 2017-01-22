@@ -51,6 +51,7 @@ We purposefully ignore the following flaws:
 
 * cannot handle "complex" CSV data
 * inefficient, both in terms of CPU and memory
+* unsafe - IO and syntax errors throw exceptions
 
 ???
 
@@ -792,7 +793,7 @@ def decodeCell[A: CellDecoder](cell: String): A =
 
 Note that this has a cost - the implicit instance is resolved through a method call.
 
-[Erik Osheim](https://twitter.com/d6/)'s [imp](https://github.com/non/imp) addresses that issue elegantly.
+[Erik Osheim](https://twitter.com/d6/)'s [imp](https://github.com/non/imp) addresses this issue elegantly.
 
 ---
 
@@ -830,17 +831,24 @@ implicit class CellDecoderOps(val cell: String) {
 }
 ```
 
-???
-
-Implicit classes can be tricky - in particular, they can yield some unexpected implicit name clashes.
-
 --
 
 Operators have a cost - boxing and unboxing of values. They can be offset by:
-
 - making the implicit class a value class (`extends AnyVal`).
 - Using [Erik Osheim](https://twitter.com/d6/)'s [machinist](https://github.com/typelevel/machinist).
 
+--
+
+Implicit classes can be tricky - in particular, they suffer from surprising name conflicts.
+
+???
+A safer, boilerplate-heavy approach to implicit classes is the `ToXxxOps` pattern.
+
+---
+
+class: center, middle
+
+# Wrapping things up
 
 ---
 
@@ -859,12 +867,14 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res33: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@59cc860d
+// res33: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@3950f3ea
 ```
 
 ---
 
 ## More information
+
+Slides available on https://github.com/nrinaudo/talk-typeclasses-csv
 
 Find me on Twitter ([`@NicolasRinaudo`](https://twitter.com/NicolasRinaudo))
 
@@ -872,9 +882,10 @@ Make fun of my code on Github ([`nrinaudo`](https://github.com/nrinaudo/))
 
 See [kantan.csv](http://nrinaudo.github.io/kantan.csv/) for a concrete, usable implementation
 
-Get in touch with [`ioSquare`](http://iosquare.com), we're always on the lookout for Scala talent
+Get in touch with [`ioSquare`](http://iosquare.com/careers.php), we're always on the lookout for Scala talent
 
-Slides backed by [remark.js](https://remarkjs.com/) and Rob Norris' amazing [tut](https://github.com/tpolecat/tut)
+Slides backed by [remark.js](https://remarkjs.com/) and [Rob Norris](https://twitter.com/tpolecat)' amazing
+[tut](https://github.com/tpolecat/tut)
 
 
 
