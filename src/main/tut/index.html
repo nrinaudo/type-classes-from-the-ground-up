@@ -34,12 +34,6 @@ CSV data is composed of rows, each row is composed of cells.
 
 ---
 
-class: center, middle
-
-# Defining type classes
-
----
-
 ## Simple CSV parser
 
 ```tut:silent
@@ -56,6 +50,12 @@ We purposefully ignore the following flaws:
 ???
 
 For a real-life scenario, we could consider relegating the parsing to a dedicated library like jackson-csv.
+
+---
+
+class: center, middle
+
+# Defining type classes
 
 ---
 
@@ -379,7 +379,7 @@ decodeCsv[(Int, String)](input)
 
 --
 
-Disapointing, though: parsing of individual cells is hard-coded.
+Disapointing, though: decoding of individual cells is hard-coded.
 
 Didn't we just write a mechanism for that?
 
@@ -642,10 +642,10 @@ uses [`CanBuildFrom`](http://www.scala-lang.org/api/2.11.8/#scala.collection.gen
 ```tut:silent
 import scala.collection.generic.CanBuildFrom
 
-implicit def cbfDecoder[A, C[_]](
+implicit def cbfDecoder[A, F[_]](
     implicit da: CellDecoder[A],
-             cbf: CanBuildFrom[Nothing, A, C[A]]
-  ): RowDecoder[C[A]] =
+             cbf: CanBuildFrom[Nothing, A, F[A]]
+  ): RowDecoder[F[A]] =
   rowDecoder(_.foldLeft(cbf.apply()) { (out, s) ⇒
     out += da.decode(s)
   }.result())
@@ -834,8 +834,6 @@ implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]
 Slides available on https://github.com/nrinaudo/talk-typeclasses-csv
 
 Find me on Twitter ([`@NicolasRinaudo`](https://twitter.com/NicolasRinaudo))
-
-Make fun of my code on Github ([`nrinaudo`](https://github.com/nrinaudo/))
 
 See [kantan.csv](http://nrinaudo.github.io/kantan.csv/) for a concrete, usable implementation
 
