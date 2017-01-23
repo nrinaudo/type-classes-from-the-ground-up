@@ -136,7 +136,7 @@ This is very simplified. We could also talk about:
 --
 
 ```scala
-implicit val i: Int = 2
+implicit val defaultInt: Int = 2
 
 def printInt(implicit i: Int): Unit = println(i)
 ```
@@ -155,7 +155,7 @@ printInt
 Strictly equivalent to:
 
 ```scala
-printInt(i)
+printInt(defaultInt)
 ```
 
 ---
@@ -428,7 +428,7 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 --
 
 ```scala
-implicit val d: Double = 3.0
+implicit val defaultDouble: Double = 3.0
 
 implicit def getFloat(implicit d: Double): Float = d.toFloat
 
@@ -449,7 +449,7 @@ printFloat
 Strictly equivalent to:
 
 ```scala
-printFloat(getFloat(d))
+printFloat(getFloat(defaultDouble))
 ```
 
 ???
@@ -867,7 +867,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res33: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@61abe803
+// res33: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@763163df
 ```
 
 ---
