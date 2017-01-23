@@ -129,7 +129,7 @@ This is very simplified. We could also talk about:
 --
 
 ```tut:silent
-implicit val i: Int = 2
+implicit val defaultInt: Int = 2
 
 def printInt(implicit i: Int): Unit = println(i)
 ```
@@ -147,7 +147,7 @@ printInt
 Strictly equivalent to:
 
 ```tut:silent
-printInt(i)
+printInt(defaultInt)
 ```
 
 ---
@@ -411,7 +411,7 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 --
 
 ```tut:silent
-implicit val d: Double = 3.0
+implicit val defaultDouble: Double = 3.0
 
 implicit def getFloat(implicit d: Double): Float = d.toFloat
 
@@ -431,7 +431,7 @@ printFloat
 Strictly equivalent to:
 
 ```tut:silent
-printFloat(getFloat(d))
+printFloat(getFloat(defaultDouble))
 ```
 
 ???
