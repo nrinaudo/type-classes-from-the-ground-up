@@ -750,7 +750,7 @@ def decodeCell[A: CellDecoder](cell: String): A =
 
 --
 
-Note that this has a cost - the implicit instance is resolved through a method call.
+⚠️️ Note that this has a cost - the implicit instance is resolved through a method call.
 
 [Erik Osheim](https://twitter.com/d6/)'s [imp](https://github.com/non/imp) addresses this issue elegantly.
 
@@ -791,13 +791,13 @@ implicit class CellDecoderOps(val cell: String) {
 
 --
 
-Operators have a cost - boxing and unboxing of values. They can be offset by:
+⚠️️ Operators have a cost - boxing and unboxing of values. They can be offset by:
 - making the implicit class a value class (`extends AnyVal`).
 - Using [Erik Osheim](https://twitter.com/d6/)'s [machinist](https://github.com/typelevel/machinist).
 
 --
 
-Implicit classes can be tricky - in particular, they suffer from surprising name conflicts.
+⚠️️ Implicit classes can be tricky - in particular, they suffer from surprising name conflicts.
 
 ???
 A safer, boilerplate-heavy approach to implicit classes is the `ToXxxOps` pattern.
