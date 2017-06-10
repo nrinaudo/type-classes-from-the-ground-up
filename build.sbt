@@ -5,10 +5,11 @@ tutSettings
 val tutDirName = settingKey[String]("tut output directory")
 tutDirName := "./"
 
+enablePlugins(GhpagesPlugin)
+
 addMappingsToSiteDir(tut, tutDirName)
 includeFilter in SitePlugin.autoImport.makeSite :=
     "*.yml" | "*.md" | "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.eot" | "*.svg" | "*.ttf" |
     "*.woff" | "*.woff2" | "*.otf"
 
-ghpages.settings
 git.remoteRepo := "git@github.com:nrinaudo/talk-typeclasses-csv.git"
