@@ -422,7 +422,7 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 
 ## Another look at implicit resolution
 
-> When the compiler looks for an implicit values of type `T` and finds an implicit function that returns a `T` that
+> When the compiler looks for an implicit value of type `T` and finds an implicit function that returns a `T` that
 > it can call, it will use its return value.
 
 --
@@ -867,7 +867,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res33: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@a624726
+// res33: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@74c6c1a6
 ```
 
 ---
