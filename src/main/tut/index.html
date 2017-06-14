@@ -405,7 +405,7 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 
 ## Another look at implicit resolution
 
-> When the compiler looks for an implicit values of type `T` and finds an implicit function that returns a `T` that
+> When the compiler looks for an implicit value of type `T` and finds an implicit function that returns a `T` that
 > it can call, it will use its return value.
 
 --
@@ -550,7 +550,7 @@ implicit def optionCellDecoder[A](
 
 ---
 
-## Optional cells (2)
+## Optional cells ²
 
 This yields the expected result:
 
@@ -592,7 +592,7 @@ implicit def eitherCellDecoder[A, B](implicit
 
 ---
 
-## Cells with multiple types (2)
+## Cells with multiple types ²
 
 This yields the expected result:
 
@@ -657,7 +657,7 @@ Ignore the `CanBuildFrom` type - it's needlessly complicated and out of scope.
 
 ---
 
-## Collections of values (2)
+## Collections of values ²
 
 This yields the expected result:
 
