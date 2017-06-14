@@ -574,7 +574,7 @@ implicit def optionCellDecoder[A](
 
 ---
 
-## Optional cells (2)
+## Optional cells ²
 
 This yields the expected result:
 
@@ -620,7 +620,7 @@ implicit def eitherCellDecoder[A, B](implicit
 
 ---
 
-## Cells with multiple types (2)
+## Cells with multiple types ²
 
 This yields the expected result:
 
@@ -694,7 +694,7 @@ Ignore the `CanBuildFrom` type - it's needlessly complicated and out of scope.
 
 ---
 
-## Collections of values (2)
+## Collections of values ²
 
 This yields the expected result:
 
@@ -867,7 +867,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res33: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@6f8e5e86
+// res33: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@a624726
 ```
 
 ---
