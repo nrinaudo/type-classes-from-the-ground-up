@@ -96,7 +96,7 @@ Not very practical: one has to manually parse `Int`s every time.
 Usual answer to making reusable code: λ-functions
 
 ```tut:silent
-def decodeCsv[A](input: String)(f: String ⇒ A): List[List[A]] =
+def decodeCsv[A](input: String)(f: String => A): List[List[A]] =
   parseCsv(input).map(_.map(f))
 ```
 
@@ -158,10 +158,10 @@ Declare an implicit decoding function parameter:
 
 ```tut:silent
 def decodeCsv[A](input: String)
-                (implicit f: String ⇒ A): List[List[A]] =
+                (implicit f: String => A): List[List[A]] =
   parseCsv(input).map(_.map(f))
 
-implicit val strToInt: String ⇒ Int = Integer.parseInt
+implicit val strToInt: String => Int = Integer.parseInt
 ```
 
 --
@@ -185,7 +185,7 @@ This is the first time explicit type parameters are used. Does everyone understa
 
 ## The dangers of implicits
 
-> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit `S` ⇒ `T`
+> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit `S` => `T`
 > in scope, it will be applied silently.
 
 This is called implicit conversion, and can result in some tricky behaviours:
@@ -335,11 +335,11 @@ def decodeCsv[A](input: String)
 Let's make instance creation less of a pain:
 
 ```tut:silent
-def cellDecoder[A](f: String ⇒ A) = new CellDecoder[A] {
+def cellDecoder[A](f: String => A) = new CellDecoder[A] {
   override def decode(cell: String) = f(cell)
 }
 
-def rowDecoder[A](f: List[String] ⇒ A) = new RowDecoder[A] {
+def rowDecoder[A](f: List[String] => A) = new RowDecoder[A] {
   override def decode(cells: List[String]) = f(cells)
 }
 
@@ -366,7 +366,7 @@ Default instances should be declared in the companion object, it's just not very
 
 ```tut:silent
 implicit val tupleDecoder: RowDecoder[(Int, String)] =
-  rowDecoder(cells ⇒ (cells(0).toInt, cells(1)))
+  rowDecoder(cells => (cells(0).toInt, cells(1)))
 ```
 
 --
@@ -391,7 +391,7 @@ Naive implementation:
 
 ```tut:silent
 implicit val tupleDecoder: RowDecoder[(Int, String)] =
-  rowDecoder { cells ⇒ (
+  rowDecoder { cells => (
     intCellDecoder.decode(cells(0)),
     stringCellDecoder.decode(cells(1))
   )}
@@ -452,7 +452,7 @@ implicit def tupleDecoder(
     implicit di: CellDecoder[Int],
              ds: CellDecoder[String]
   ): RowDecoder[(Int, String)] =
-  rowDecoder(cells ⇒ (di.decode(cells(0)), ds.decode(cells(1))))
+  rowDecoder(cells => (di.decode(cells(0)), ds.decode(cells(1))))
 ```
 
 --
@@ -478,7 +478,7 @@ implicit def tupleDecoder[A, B](
     implicit da: CellDecoder[A],
              db: CellDecoder[B]
   ): RowDecoder[(A, B)] =
-  rowDecoder(cells ⇒ (da.decode(cells(0)), db.decode(cells(1))))
+  rowDecoder(cells => (da.decode(cells(0)), db.decode(cells(1))))
 ```
 
 ???
@@ -543,8 +543,8 @@ This is what `Option` is made for.
 implicit def optionCellDecoder[A](
     implicit da: CellDecoder[A]
   ): CellDecoder[Option[A]] = cellDecoder {
-  case "" ⇒ None
-  case s  ⇒ Some(da.decode(s))
+  case "" => None
+  case s  => Some(da.decode(s))
 }
 ```
 
@@ -580,9 +580,9 @@ We have `Either` to represent these cases:
 implicit def eitherCellDecoder[A, B](implicit
     da: CellDecoder[A],
     db: CellDecoder[B]
-  ): CellDecoder[Either[A, B]] = cellDecoder { cell ⇒
+  ): CellDecoder[Either[A, B]] = cellDecoder { cell =>
     try { Left(da.decode(cell)) }
-    catch { case _: Throwable ⇒ Right(db.decode(cell)) }
+    catch { case _: Throwable => Right(db.decode(cell)) }
   }
 ```
 
@@ -646,7 +646,7 @@ implicit def cbfDecoder[A, F[_]](
     implicit da: CellDecoder[A],
              cbf: CanBuildFrom[Nothing, A, F[A]]
   ): RowDecoder[F[A]] =
-  rowDecoder(_.foldLeft(cbf.apply()) { (out, s) ⇒
+  rowDecoder(_.foldLeft(cbf.apply()) { (out, s) =>
     out += da.decode(s)
   }.result())
 ```
@@ -765,7 +765,7 @@ case class CellDecoderOps(cell: String) {
   def decodeCell[A: CellDecoder]: A = CellDecoder[A].decode(cell)
 }
 
-implicit val toCellDecoderOps: String ⇒ CellDecoderOps =
+implicit val toCellDecoderOps: String => CellDecoderOps =
   CellDecoderOps.apply
 ```
 

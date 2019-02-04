@@ -1,11 +1,10 @@
+enablePlugins(TutPlugin, GhpagesPlugin)
+
 organization := "com.nrinaudo"
-scalaVersion := "2.12.1"
-tutSettings
+scalaVersion := "2.12.8"
 
 val tutDirName = settingKey[String]("tut output directory")
 tutDirName := "./"
-
-enablePlugins(GhpagesPlugin)
 
 addMappingsToSiteDir(tut, tutDirName)
 includeFilter in SitePlugin.autoImport.makeSite :=
