@@ -11,4 +11,4 @@ includeFilter in SitePlugin.autoImport.makeSite :=
     "*.yml" | "*.md" | "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.eot" | "*.svg" | "*.ttf" |
     "*.woff" | "*.woff2" | "*.otf"
 
-git.remoteRepo := "git@github.com:nrinaudo/talk-typeclasses-csv.git"
+git.remoteRepo := "git@github.com:nrinaudo/type-classes-from-the-ground-up.git"

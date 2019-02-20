@@ -3,4 +3,4 @@ The purpose of this talk is to demystify Scala type classes and show how functio
 
 Attendants would ideally be able to read idiomatic Scala code, but no arcane knowledge is required to follow.
 
-Slides can be consulted directly on the [companion site](https://nrinaudo.github.io/talk-typeclasses-csv/#1)
+Slides can be consulted directly on the [companion site](https://nrinaudo.github.io/type-classes-from-the-ground-up/)
