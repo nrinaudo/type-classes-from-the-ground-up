@@ -126,7 +126,9 @@ This is very simplified. We could also talk about:
 - when two acceptable implicit values are found, priority rules apply
 - when two acceptable implicit values are found with the same priority, compilation fails.
 
---
+---
+
+## Small detour: implicit resolution .super[2]
 
 ```tut:silent
 implicit val defaultInt: Int = 2
@@ -185,7 +187,7 @@ This is the first time explicit type parameters are used. Does everyone understa
 
 ## The dangers of implicits
 
-> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit `S` => `T`
+> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit `S => T`
 > in scope, it will be applied silently.
 
 This is called implicit conversion, and can result in some tricky behaviours:
@@ -403,12 +405,14 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 
 ---
 
-## Another look at implicit resolution
+## Implicit resolution revisited
 
 > When the compiler looks for an implicit value of type `T` and finds an implicit function that returns a `T` that
 > it can call, it will use its return value.
 
---
+---
+
+## Implicit resolution revisited .super[2]
 
 ```tut:silent
 implicit val defaultDouble: Double = 3.0
@@ -535,7 +539,9 @@ Sometimes, CSV cells are absent or empty:
 val input = "1,Nicolas\n,Jessica\n3,Matt"
 ```
 
---
+---
+
+## Optional cells .super[2]
 
 This is what `Option` is made for.
 
@@ -550,7 +556,7 @@ implicit def optionCellDecoder[A](
 
 ---
 
-## Optional cells ²
+## Optional cells .super[3]
 
 This yields the expected result:
 
@@ -572,7 +578,9 @@ _We've written an instance of `CellDecoder[Option[A]]` for all `A` that have a `
 val input = "1,Nicolas\ntrue,Jessica"
 ```
 
---
+---
+
+## Cells with multiple types .super[2]
 
 We have `Either` to represent these cases:
 
@@ -586,13 +594,9 @@ implicit def eitherCellDecoder[A, B](implicit
   }
 ```
 
-???
-
-* Mention alternative `Either` encodings, such as `scalaz.\/`
-
 ---
 
-## Cells with multiple types ²
+## Cells with multiple types .super[3]
 
 This yields the expected result:
 
@@ -634,7 +638,9 @@ We have lost the ability to decode a row as `List[Int]` on the way:
 val input = "1,2,3\n4,5,6"
 ```
 
---
+---
+
+## Collections of values .super[2]
 
 "Easily" fixed (warning -
 uses [`CanBuildFrom`](http://www.scala-lang.org/api/2.11.8/#scala.collection.generic.CanBuildFrom)):
@@ -657,7 +663,7 @@ Ignore the `CanBuildFrom` type - it's needlessly complicated and out of scope.
 
 ---
 
-## Collections of values ²
+## Collections of values .super[3]
 
 This yields the expected result:
 
@@ -839,8 +845,7 @@ See [kantan.csv](http://nrinaudo.github.io/kantan.csv/) for a concrete, usable i
 
 Get in touch with [`Besedo`](https://twitter.com/besedo_official), we're always on the lookout for Scala talent
 
-Slides backed by [remark.js](https://remarkjs.com/) and [Rob Norris](https://twitter.com/tpolecat)' amazing
-[tut](https://github.com/tpolecat/tut)
+Slides backed by [remark.js](https://remarkjs.com/) and the amazing [tut](https://github.com/tpolecat/tut)
 
 
 
