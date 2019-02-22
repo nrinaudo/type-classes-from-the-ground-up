@@ -1,46 +1,4 @@
-@font-face{
-    font-family: 'Fira Code';
-    src: url('FiraCode/eot/FiraCode-Light.eot');
-    src: url('FiraCode/eot/FiraCode-Light.eot') format('embedded-opentype'),
-         url('FiraCode/woff2/FiraCode-Light.woff2') format('woff2'),
-         url('FiraCode/woff/FiraCode-Light.woff') format('woff'),
-         url('FiraCode/ttf/FiraCode-Light.ttf') format('truetype');
-    font-weight: 300;
-    font-style: normal;
-}
-
-@font-face{
-    font-family: 'Fira Code';
-    src: url('FiraCode/eot/FiraCode-Regular.eot');
-    src: url('FiraCode/eot/FiraCode-Regular.eot') format('embedded-opentype'),
-         url('FiraCode/woff2/FiraCode-Regular.woff2') format('woff2'),
-         url('FiraCode/woff/FiraCode-Regular.woff') format('woff'),
-         url('FiraCode/ttf/FiraCode-Regular.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-}
-
-@font-face{
-    font-family: 'Fira Code';
-    src: url('FiraCode/eot/FiraCode-Medium.eot');
-    src: url('FiraCode/eot/FiraCode-Medium.eot') format('embedded-opentype'),
-         url('FiraCode/woff2/FiraCode-Medium.woff2') format('woff2'),
-         url('FiraCode/woff/FiraCode-Medium.woff') format('woff'),
-         url('FiraCode/ttf/FiraCode-Medium.ttf') format('truetype');
-    font-weight: 500;
-    font-style: normal;
-}
-
-@font-face{
-    font-family: 'Fira Code';
-    src: url('FiraCode/eot/FiraCode-Bold.eot');
-    src: url('FiraCode/eot/FiraCode-Bold.eot') format('embedded-opentype'),
-         url('FiraCode/woff2/FiraCode-Bold.woff2') format('woff2'),
-         url('FiraCode/woff/FiraCode-Bold.woff') format('woff'),
-         url('FiraCode/ttf/FiraCode-Bold.ttf') format('truetype');
-    font-weight: 700;
-    font-style: normal;
-}
+@import './fira_code/fira_code.css';
 
 body {
     /* I like the way https://plfa.github.io/ looks, so I basically stole this magical incantation. */
@@ -73,8 +31,21 @@ body {
     box-shadow: none;
 }
 
-h1, h2, h3 {
+h1, h2, h3, .section {
     color: #2980b9;
+}
+
+.super {
+    vertical-align: super;
+    font-size:      .5em;
+}
+
+.section {
+    font-weight: bold;
+}
+
+.section::after {
+    content: ":";
 }
 
 h2, h3 {
@@ -99,4 +70,9 @@ blockquote {
 
 blockquote p {
   display: inline;
+}
+
+/* Comments tend to be huge - stack traces and compiler errors. This makes them more readable. */
+.hljs-comment {
+    font-size: .85em;
 }
