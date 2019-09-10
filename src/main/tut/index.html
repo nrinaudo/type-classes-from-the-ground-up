@@ -93,7 +93,7 @@ Not very practical: one has to manually parse `Int`s every time.
 
 ## Decoding CSV: first attempt
 
-Usual answer to making reusable code: λ-functions
+Usual answer to making reusable code: functions
 
 ```tut:silent
 def decodeCsv[A](input: String)(f: String => A): List[List[A]] =
@@ -862,7 +862,7 @@ class: center, middle
     </script>
     <script type="text/javascript">
         var slideshow = remark.create({
-        highlightStyle: 'solarized-dark'
+        highlightStyle: 'github'
       });
     </script>
   </body>
