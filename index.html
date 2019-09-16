@@ -99,7 +99,7 @@ Not very practical: one has to manually parse `Int`s every time.
 
 ## Decoding CSV: first attempt
 
-Usual answer to making reusable code: λ-functions
+Usual answer to making reusable code: functions
 
 ```scala
 def decodeCsv[A](input: String)(f: String => A): List[List[A]] =
@@ -873,7 +873,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res24: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@44d8b7da
+// res24: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@24fb2915
 ```
 
 ---
@@ -905,7 +905,7 @@ class: center, middle
     </script>
     <script type="text/javascript">
         var slideshow = remark.create({
-        highlightStyle: 'solarized-dark'
+        highlightStyle: 'github'
       });
     </script>
   </body>
