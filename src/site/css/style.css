@@ -148,9 +148,20 @@ th .remark-inline-code {
     display: none;
 }
 
-.remark-code-span-highlighted, .remark-code-line-highlighted {
+.remark-code-span-highlighted, .remark-code-line-highlighted, .highlight {
     padding         : 0;
     background-color: #02ebf2;
+}
+
+.highlight {
+    padding-bottom  : 1px;
+}
+
+.highlight .remark-inline-code, .highlight .remark-code {
+    color:         inherit;
+    background:    inherit;
+    border:        1px solid #02ebf2;
+    padding-bottom: 0;
 }
 
 .remark-code-span-highlighted .hljs-comment, .remark-code-line-highlighted .hljs-comment,
