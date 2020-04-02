@@ -89,7 +89,79 @@ blockquote p {
   display: inline;
 }
 
-/* Comments tend to be huge - stack traces and compiler errors. This makes them more readable. */
-.hljs-comment {
-    font-size: .85em;
+table {
+    border-collapse: collapse;
+    background:      #fff;
+    width:           100%;
+}
+
+th {
+    background: #2980b9;
+    color:      #ecf0f4;
+}
+
+th, td {
+    border:     1px solid #ecf0f4;
+    padding:    5px 10px 5px 10px;
+    text-align: center
+}
+
+/** Relatively nasty fix to fix cell width when a table appears bit by bit. */
+
+.fix2 td, .fix2 th  {
+  width: 50%;
+}
+
+.fix3 td, .fix3 th  {
+  width: 33%;
+}
+
+
+th:empty, td:empty {
+    background: #ecf0f4;
+    padding:    0;
+    width:      4px;
+}
+
+th .remark-inline-code {
+    border:        none;
+    background:    none;
+    color:         #fff;
+}
+
+.fright {
+    float: right;
+}
+
+.fleft {
+    float: left;
+}
+
+.foreground {
+    float: right;
+    position: absolute;
+    right: -200px;
+    top: -100px;
+}
+
+.remark-slide-number {
+    display: none;
+}
+
+.remark-code-span-highlighted, .remark-code-line-highlighted {
+    padding         : 0;
+    background-color: #02ebf2;
+}
+
+.remark-code-span-highlighted .hljs-comment, .remark-code-line-highlighted .hljs-comment,
+.hljs-comment .remark-code-span-highlighted, .hljs-comment .remark-code-line-highlighted {
+    color      : #000;
+    font-weight: bold;
+}
+
+.annotated img {
+    float   : right;
+    position: absolute;
+    right   : 100px;
+    top     : 100px;
 }

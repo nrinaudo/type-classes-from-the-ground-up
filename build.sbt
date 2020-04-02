@@ -1,7 +1,8 @@
 enablePlugins(TutPlugin, GhpagesPlugin)
 
+name         := "typeclasses-from-the-ground-up"
 organization := "com.nrinaudo"
-scalaVersion := "2.12.8"
+scalaVersion := "2.12.11"
 
 val tutDirName = settingKey[String]("tut output directory")
 tutDirName := "./"
