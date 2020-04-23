@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Type Classes from the Ground Up</title>
+        <title>Type classes from the ground up</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <link rel="stylesheet" type="text/css" href="css/style.css"/>
     </head>
@@ -9,57 +9,141 @@
         <textarea id="source">
 class: center, middle
 
-# Type Classes from the Ground Up
+# Type classes from the ground up
 
 Nicolas Rinaudo • [@NicolasRinaudo] • [Besedo]
 
 ---
 
-## Goals
-
-* Understand what purpose type classes serve
-* Get a feel for implicit composition
-
---
-
-## Running example: CSV parser
-
-CSV data is composed of rows, each row is composed of cells.
-
-```csv
-1,Nicolas,Rinaudo
-2,Jessica,Jones
-3,Matt,Murdock
-```
-
----
-
-## Simple CSV parser
-
-```scala
-def parseCsv(input: String): List[List[String]] =
-  input.split('\n').toList.map(_.split(",").toList)
-```
-
-We purposefully ignore the following flaws:
-
-* cannot handle "complex" CSV data
-* inefficient, both in terms of CPU and memory
-* unsafe - IO and syntax errors throw exceptions
-
-???
-
-For a real-life scenario, we could consider relegating the parsing to a dedicated library like jackson-csv.
-
----
-
 class: center, middle
 
-# Defining type classes
+# Parsing CSV
 
 ---
 
-## Basic example: raw numbers
+## CSV data
+
+```csv
+1,2,3
+4,5,6
+7,8,9
+```
+
+```scala
+type Cell = String
+type Row  = List[Cell]
+type Csv  = List[Row]
+```
+
+---
+
+## CSV data
+
+```csv
+&#x200B;`1,2,3`
+&#x200B;`4,5,6`
+&#x200B;`7,8,9`
+```
+
+```scala
+type Cell = String
+type Row  = List[Cell]
+*type Csv  = List[Row]
+```
+
+---
+
+## CSV data
+
+```csv
+&#x200B;`1`,`2`,`3`
+4,5,6
+7,8,9
+```
+
+```scala
+type Cell = String
+*type Row  = List[Cell]
+type Csv  = List[Row]
+```
+
+---
+
+## CSV data
+
+```csv
+&#x200B;`1`,2,3
+4,5,6
+7,8,9
+```
+
+```scala
+*type Cell = String
+type Row  = List[Cell]
+type Csv  = List[Row]
+```
+
+---
+
+## Parsing CSV
+
+```csv
+1,2,3
+4,5,6
+7,8,9
+```
+
+```scala
+def parseCsv(data: String) = ???
+```
+
+---
+
+## Parsing CSV
+
+```csv
+*1,2,3
+*4,5,6
+*7,8,9
+```
+
+```scala
+def parseCsv(`data: String`) = ???
+```
+
+---
+
+## Parsing CSV
+
+```csv
+&#x200B;`1,2,3`
+&#x200B;`4,5,6`
+&#x200B;`7,8,9`
+```
+
+```scala
+def parseCsv(data: String) =
+  data.split("\n").toList
+```
+
+---
+
+## Parsing CSV
+
+```csv
+&#x200B;`1`,`2`,`3`
+&#x200B;`4`,`5`,`6`
+&#x200B;`7`,`8`,`9`
+```
+
+```scala
+def parseCsv(data: String): Csv =
+  data.split("\n").toList.map(_.split(",").toList)
+```
+
+---
+
+## Parsing CSV
 
 ```scala
 val input = "1,2,3\n4,5,6\n7,8,9"
@@ -71,71 +155,302 @@ val input = "1,2,3\n4,5,6\n7,8,9"
 
 --
 
-Running the parser yields:
-
 ```scala
 parseCsv(input)
-// res0: List[List[String]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+// res0: Csv = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
-
---
-
-Representing clear numeric values as `String`s is unsatisfactory.
 
 ---
 
-## Improvement: mapping to `Int`
+class: center, middle
+
+# Decoding CSV
+
+---
+
+## Decoding to `Int`
+
+```csv
+1,2,3
+4,5,6
+7,8,9
+```
 
 ```scala
-parseCsv(input).map(_.map(_.toInt))
+parseCsv(input).
+  map(_.map(_.toInt))
+```
+
+---
+
+## Decoding to `Int`
+
+```csv
+&#x200B;`1`,`2`,`3`
+&#x200B;`4`,`5`,`6`
+&#x200B;`7`,`8`,`9`
+```
+
+```scala
+&#x200B;`parseCsv(input)`.
+  map(_.map(_.toInt))
+```
+
+---
+
+## Decoding to `Int`
+
+```csv
+&#x200B;`1`,`2`,`3`
+4,5,6
+7,8,9
+```
+
+```scala
+parseCsv(input).
+  `map`(_.map(_.toInt))
+```
+
+---
+
+## Decoding to `Int`
+
+```csv
+&#x200B;`1`,2,3
+4,5,6
+7,8,9
+```
+
+```scala
+parseCsv(input).
+  map(_.`map`(_.toInt))
+```
+
+---
+
+## Decoding to `Int`
+
+```csv
+&#x200B;`1`,2,3
+4,5,6
+7,8,9
+```
+
+```scala
+parseCsv(input).
+  map(_.map(_.`toInt`))
+```
+
+---
+
+## Decoding to `Int`
+
+```csv
+1,2,3
+4,5,6
+7,8,9
+```
+
+```scala
+parseCsv(input).
+  map(_.map(_.toInt))
 // res1: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
---
+---
 
-Not very practical: one has to manually parse `Int`s every time.
+## Decoding to `Int`
+
+```scala
+def decodeCsv(
+  input: String
+): List[List[Int]] =
+  parseCsv(input).
+    map(_.map(_.toInt))
+```
 
 ---
 
-## Decoding CSV: first attempt
-
-Usual answer to making reusable code: functions
+## Decoding to `Int`
 
 ```scala
-def decodeCsv[A](input: String)(f: String => A): List[List[A]] =
-  parseCsv(input).map(_.map(f))
+def decodeCsv(
+  `input: String`
+): List[List[Int]] =
+  parseCsv(input).
+    map(_.map(_.toInt))
 ```
 
---
+---
 
-Running the decoder yields:
+## Decoding to `Int`
 
 ```scala
-decodeCsv(input)(_.toInt)
+def decodeCsv(
+  input: String
+): `List[List[Int]]` =
+  parseCsv(input).
+    map(_.map(_.toInt))
+```
+
+---
+
+## Decoding to `Int`
+
+```scala
+def decodeCsv(
+  input: String
+): List[List[Int]] =
+* parseCsv(input).
+*   map(_.map(_.toInt))
+```
+
+---
+
+## Decoding to `Int`
+
+```scala
+def decodeCsv(
+  input: String
+): List[List[Int]] =
+  parseCsv(input).
+    map(_.map(`_.toInt`))
+```
+
+---
+
+## Decoding to `Int`
+
+```scala
+def decodeCsv(
+  input     : String,
+  decodeCell: String => Int
+): List[List[Int]] =
+  parseCsv(input).
+    map(_.map(decodeCell))
+```
+
+---
+
+## Decoding to `Int`
+
+```scala
+def decodeCsv(
+  input     : String,
+  `decodeCell: String => Int`
+): List[List[Int]] =
+  parseCsv(input).
+    map(_.map(decodeCell))
+```
+
+---
+
+## Decoding to `Int`
+
+```scala
+def decodeCsv(
+  input     : String,
+  decodeCell: String => Int
+): List[List[Int]] =
+  parseCsv(input).
+    map(_.map(`decodeCell`))
+```
+
+---
+
+## Decoding to `Int`
+
+```scala
+def decodeCsv(
+  input     : String,
+  decodeCell: String => `Int`
+): List[List[`Int`]] =
+  parseCsv(input).
+    map(_.map(decodeCell))
+```
+
+---
+
+## Generic decoding
+
+```scala
+def decodeCsv[A](
+  input     : String,
+  decodeCell: String => A
+): List[List[A]] =
+  parseCsv(input).
+    map(_.map(decodeCell))
+```
+
+---
+
+## Generic decoding
+
+```scala
+def decodeCsv[`A`](
+  input     : String,
+  decodeCell: String => `A`
+): List[List[`A`]] =
+  parseCsv(input).
+    map(_.map(decodeCell))
+```
+
+---
+
+## Generic decoding
+
+```scala
+decodeCsv(input, _.toInt)
+```
+
+---
+
+## Generic decoding
+
+```scala
+decodeCsv(input, `_.toInt`)
+```
+
+---
+
+## Generic decoding
+
+```scala
+decodeCsv(input, _.toInt)
 // res2: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
---
+---
 
-Better, but not great: one has to manually convert values to the desired type every time.
+## Generic decoding
+
+```scala
+decodeCsv(input, _.toFloat)
+```
 
 ---
 
-## Small detour: implicit resolution
+## Generic decoding
+
+```scala
+decodeCsv(input, `_.toFloat`)
+```
+
+---
+
+## Generic decoding
+
+```scala
+decodeCsv(input, _.toFloat)
+// res3: List[List[Float]] = List(List(1.0, 2.0, 3.0), List(4.0, 5.0, 6.0), List(7.0, 8.0, 9.0))
+```
+
+---
+
+## Implicit resolution
 
 > When a function expects a parameter of type `T` _and_ that parameter is marked as `implicit` _and_ there exists a
-> value of type `T` marked as `implicit` in scope, then the compiler will use that value.
-
-???
-
-This is very simplified. We could also talk about:
-- implicit scope
-- when two acceptable implicit values are found, priority rules apply
-- when two acceptable implicit values are found with the same priority, compilation fails.
-
----
-
-## Small detour: implicit resolution .super[2]
+> value of type `T` marked as `implicit` in scope, then the compiler will use that value if the parameter is unspecified.
 
 ```scala
 implicit val defaultInt: Int = 2
@@ -143,54 +458,187 @@ implicit val defaultInt: Int = 2
 def printInt(implicit i: Int): Unit = println(i)
 ```
 
---
+---
 
-Running `printInt` without a parameter:
+## Implicit resolution
+
+> When a function expects a .highlight[parameter of type `T`] _and_ that parameter is marked as `implicit` _and_ there exists a
+> value of type `T` marked as `implicit` in scope, then the compiler will use that value if the parameter is unspecified.
+
+```scala
+implicit val defaultInt: Int = 2
+
+def printInt(implicit `i: Int`): Unit = println(i)
+```
+
+---
+
+## Implicit resolution
+
+> When a function expects a parameter of type `T` _and_ that parameter is .highlight[marked as `implicit`] _and_ there exists a
+> value of type `T` marked as `implicit` in scope, then the compiler will use that value if the parameter is unspecified.
+
+```scala
+implicit val defaultInt: Int = 2
+
+def printInt(`implicit` i: Int): Unit = println(i)
+```
+
+---
+
+## Implicit resolution
+
+> When a function expects a parameter of type `T` _and_ that parameter is marked as `implicit` _and_ there exists a
+> .highlight[value of type `T`] marked as `implicit` in scope, then the compiler will use that value if the parameter is unspecified.
+
+```scala
+implicit `val defaultInt: Int` = 2
+
+def printInt(implicit i: Int): Unit = println(i)
+```
+
+---
+
+## Implicit resolution
+
+> When a function expects a parameter of type `T` _and_ that parameter is marked as `implicit` _and_ there exists a
+> value of type `T` marked as .highlight[`implicit`] in scope, then the compiler will use that value if the parameter is unspecified.
+
+```scala
+&#x200B;`implicit` val defaultInt: Int = 2
+
+def printInt(implicit i: Int): Unit = println(i)
+```
+
+---
+
+## Implicit resolution
+
+> When a function expects a parameter of type `T` _and_ that parameter is marked as `implicit` _and_ there exists a
+> value of type `T` marked as `implicit` in scope, then the compiler will use that value .highlight[if the parameter is unspecified].
+
+```scala
+implicit val defaultInt: Int = 2
+
+def printInt(implicit i: Int): Unit = println(i)
+```
+
+```scala
+printInt`            `
+```
+
+---
+
+## Implicit resolution
+
+> When a function expects a parameter of type `T` _and_ that parameter is marked as `implicit` _and_ there exists a
+> value of type `T` marked as `implicit` in scope, then .highlight[the compiler will use that value] if the parameter is unspecified.
+
+```scala
+implicit val defaultInt: Int = 2
+
+def printInt(implicit i: Int): Unit = println(i)
+```
+
+```scala
+printInt`(defaultInt)`
+```
+
+---
+
+## Implicit resolution
+
+> When a function expects a parameter of type `T` _and_ that parameter is marked as `implicit` _and_ there exists a
+> value of type `T` marked as `implicit` in scope, then the compiler will use that value if the parameter is unspecified.
+
+```scala
+implicit val defaultInt: Int = 2
+
+def printInt(implicit i: Int): Unit = println(i)
+```
 
 ```scala
 printInt
 // 2
 ```
 
---
+---
 
-Strictly equivalent to:
+## Decoding CSV with implicits
 
 ```scala
-printInt(defaultInt)
+def decodeCsv[A]
+  (input: String)
+  (implicit decodeCell: String => A)
+ : List[List[A]] =
+  parseCsv(input).
+    map(_.map(decodeCell))
+
 ```
 
 ---
 
 ## Decoding CSV with implicits
 
-Declare an implicit decoding function parameter:
-
 ```scala
-def decodeCsv[A](input: String)
-                (implicit f: String => A): List[List[A]] =
-  parseCsv(input).map(_.map(f))
-
-implicit val strToInt: String => Int = Integer.parseInt
+def decodeCsv[A]
+  (input: String)
+  (`implicit decodeCell: String => A`)
+ : List[List[A]] =
+  parseCsv(input).
+    map(_.map(decodeCell))
 ```
 
---
+---
 
-Running the decoder without a decoding function yields:
+## Decoding CSV with implicits
+
+```scala
+implicit val strToInt: String => Int =
+  Integer.parseInt
+```
+
+---
+
+## Decoding CSV with implicits
+
+```scala
+&#x200B;`implicit` val strToInt: `String => Int` =
+  Integer.parseInt
+```
+
+---
+
+## Decoding CSV with implicits
+
+```scala
+decodeCsv[Int](input)
+```
+
+---
+
+## Decoding CSV with implicits
+
+```scala
+decodeCsv[`Int`](input)
+```
+
+---
+
+## Decoding CSV with implicits
+
+```scala
+decodeCsv[Int](input)`    `
+```
+
+---
+
+## Decoding CSV with implicits
 
 ```scala
 decodeCsv[Int](input)
 // res5: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
-
-???
-
-This is the first time explicit type parameters are used. Does everyone understand that syntax?
-
-- a function has two kinds of parameters: types and values
-- types are usually inferred and do not need to be specified
-- it's possible and sometimes necessary to pass them explicitly
-
 
 ---
 
@@ -254,7 +702,8 @@ We can now rewrite `decodeCsv`:
 ```scala
 def decodeCsv[A](input: String)
                 (implicit da: CellDecoder[A]): List[List[A]] =
-  parseCsv(input).map(_.map(da.decode))
+  parseCsv(input).
+    map(_.map(da.decode))
 ```
 
 --
@@ -343,7 +792,8 @@ trait RowDecoder[T] {
 ```scala
 def decodeCsv[A](input: String)
                 (implicit da: RowDecoder[A]): List[A] =
-  parseCsv(input).map(da.decode)
+  parseCsv(input).
+    map(da.decode)
 ```
 
 ---
@@ -429,7 +879,7 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 
 ---
 
-## Implicit resolution revisited .super[2]
+## Implicit resolution revisited
 
 ```scala
 implicit val defaultDouble: Double = 3.0
@@ -565,7 +1015,7 @@ val input = "1,Nicolas\n,Jessica\n3,Matt"
 
 ---
 
-## Optional cells .super[2]
+## Optional cells
 
 This is what `Option` is made for.
 
@@ -580,7 +1030,7 @@ implicit def optionCellDecoder[A](
 
 ---
 
-## Optional cells .super[3]
+## Optional cells
 
 This yields the expected result:
 
@@ -608,7 +1058,7 @@ val input = "1,Nicolas\ntrue,Jessica"
 
 ---
 
-## Cells with multiple types .super[2]
+## Cells with multiple types
 
 We have `Either` to represent these cases:
 
@@ -624,7 +1074,7 @@ implicit def eitherCellDecoder[A, B](implicit
 
 ---
 
-## Cells with multiple types .super[3]
+## Cells with multiple types
 
 This yields the expected result:
 
@@ -660,8 +1110,6 @@ decodeCsv[(Option[Either[Int, Boolean]], String)](input)
 // res18: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1)),Nicolas), (Some(Right(false)),Jessica), (None,Matt))
 ```
 
-
-
 ---
 
 ## Collections of values
@@ -677,7 +1125,7 @@ val input = "1,2,3\n4,5,6"
 
 ---
 
-## Collections of values .super[2]
+## Collections of values
 
 "Easily" fixed (warning -
 uses [`CanBuildFrom`](http://www.scala-lang.org/api/2.11.8/#scala.collection.generic.CanBuildFrom)):
@@ -700,7 +1148,7 @@ Ignore the `CanBuildFrom` type - it's needlessly complicated and out of scope.
 
 ---
 
-## Collections of values .super[3]
+## Collections of values
 
 This yields the expected result:
 
@@ -873,29 +1321,15 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res24: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@24fb2915
+// res24: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@2efa8273
 ```
-
----
-
-## More information
-
-Slides available on https://nrinaudo.github.io/type-classes-from-the-ground-up/
-
-Find me on Twitter ([@NicolasRinaudo])
-
-See [kantan.csv](http://nrinaudo.github.io/kantan.csv/) for a concrete, usable implementation
-
-Get in touch with [Besedo], we're always on the lookout for Scala talent
-
-Slides backed by [remark.js](https://remarkjs.com/) and the amazing [tut](https://github.com/tpolecat/tut)
-
-
 
 ---
 class: center, middle
 
-# Thanks!
+# Questions?
+
+Nicolas Rinaudo • [@NicolasRinaudo] • [Besedo]
 
 [@NicolasRinaudo]:https://twitter.com/NicolasRinaudo
 [Besedo]:https://twitter.com/besedo_official
@@ -905,7 +1339,9 @@ class: center, middle
     </script>
     <script type="text/javascript">
         var slideshow = remark.create({
-        highlightStyle: 'github'
+          highlightStyle: 'github',
+          highlightSpans: true,
+          highlightLines: true
       });
     </script>
   </body>
