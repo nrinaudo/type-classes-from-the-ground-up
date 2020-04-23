@@ -123,7 +123,24 @@ def parseCsv(`data: String`) = ???
 
 ```scala
 def parseCsv(data: String) =
-  data.split("\n").toList
+  data.
+    split("\n").toList
+```
+
+---
+
+## Parsing CSV
+
+```csv
+&#x200B;`1,2,3`
+&#x200B;`4,5,6`
+&#x200B;`7,8,9`
+```
+
+```scala
+def parseCsv(data: String) =
+  data.
+    `split("\n")`.toList
 ```
 
 ---
@@ -138,7 +155,43 @@ def parseCsv(data: String) =
 
 ```scala
 def parseCsv(data: String): Csv =
-  data.split("\n").toList.map(_.split(",").toList)
+  data.
+    split("\n").toList.
+    map(_.split(",").toList)
+```
+
+---
+
+## Parsing CSV
+
+```csv
+&#x200B;`1`,`2`,`3`
+&#x200B;`4`,`5`,`6`
+&#x200B;`7`,`8`,`9`
+```
+
+```scala
+def parseCsv(data: String): Csv =
+  data.
+    split("\n").toList.
+    map(_.`split(",")`.toList)
+```
+
+---
+
+## Parsing CSV
+
+```csv
+&#x200B;`1`,`2`,`3`
+&#x200B;`4`,`5`,`6`
+&#x200B;`7`,`8`,`9`
+```
+
+```scala
+def parseCsv(data: String): `Csv` =
+  data.
+    split("\n").toList.
+    map(_.split(",").toList)
 ```
 
 ---
@@ -324,7 +377,7 @@ def decodeCsv(
 ```scala
 def decodeCsv(
   input     : String,
-  decodeCell: String => Int
+  decodeCell: Cell => Int
 ): List[List[Int]] =
   parseCsv(input).
     map(_.map(decodeCell))
@@ -337,7 +390,7 @@ def decodeCsv(
 ```scala
 def decodeCsv(
   input     : String,
-  `decodeCell: String => Int`
+  `decodeCell: Cell => Int`
 ): List[List[Int]] =
   parseCsv(input).
     map(_.map(decodeCell))
@@ -350,7 +403,7 @@ def decodeCsv(
 ```scala
 def decodeCsv(
   input     : String,
-  decodeCell: String => Int
+  decodeCell: Cell => Int
 ): List[List[Int]] =
   parseCsv(input).
     map(_.map(`decodeCell`))
@@ -363,7 +416,7 @@ def decodeCsv(
 ```scala
 def decodeCsv(
   input     : String,
-  decodeCell: String => `Int`
+  decodeCell: Cell => `Int`
 ): List[List[`Int`]] =
   parseCsv(input).
     map(_.map(decodeCell))
@@ -376,7 +429,7 @@ def decodeCsv(
 ```scala
 def decodeCsv[A](
   input     : String,
-  decodeCell: String => A
+  decodeCell: Cell => A
 ): List[List[A]] =
   parseCsv(input).
     map(_.map(decodeCell))
@@ -389,7 +442,7 @@ def decodeCsv[A](
 ```scala
 def decodeCsv[`A`](
   input     : String,
-  decodeCell: String => `A`
+  decodeCell: Cell => `A`
 ): List[List[`A`]] =
   parseCsv(input).
     map(_.map(decodeCell))
@@ -458,6 +511,10 @@ implicit val defaultInt: Int = 2
 def printInt(implicit i: Int): Unit = println(i)
 ```
 
+```scala
+printInt
+```
+
 ---
 
 ## Implicit resolution
@@ -469,6 +526,10 @@ def printInt(implicit i: Int): Unit = println(i)
 implicit val defaultInt: Int = 2
 
 def printInt(implicit `i: Int`): Unit = println(i)
+```
+
+```scala
+printInt
 ```
 
 ---
@@ -484,6 +545,10 @@ implicit val defaultInt: Int = 2
 def printInt(`implicit` i: Int): Unit = println(i)
 ```
 
+```scala
+printInt
+```
+
 ---
 
 ## Implicit resolution
@@ -497,6 +562,10 @@ implicit `val defaultInt: Int` = 2
 def printInt(implicit i: Int): Unit = println(i)
 ```
 
+```scala
+printInt
+```
+
 ---
 
 ## Implicit resolution
@@ -508,6 +577,10 @@ def printInt(implicit i: Int): Unit = println(i)
 &#x200B;`implicit` val defaultInt: Int = 2
 
 def printInt(implicit i: Int): Unit = println(i)
+```
+
+```scala
+printInt
 ```
 
 ---
@@ -569,7 +642,7 @@ printInt
 ```scala
 def decodeCsv[A]
   (input: String)
-  (implicit decodeCell: String => A)
+  (implicit decodeCell: Cell => A)
  : List[List[A]] =
   parseCsv(input).
     map(_.map(decodeCell))
@@ -583,7 +656,7 @@ def decodeCsv[A]
 ```scala
 def decodeCsv[A]
   (input: String)
-  (`implicit decodeCell: String => A`)
+  (`implicit decodeCell: Cell => A`)
  : List[List[A]] =
   parseCsv(input).
     map(_.map(decodeCell))
@@ -594,7 +667,7 @@ def decodeCsv[A]
 ## Decoding CSV with implicits
 
 ```scala
-implicit val strToInt: String => Int =
+implicit val strToInt: Cell => Int =
   Integer.parseInt
 ```
 
@@ -603,7 +676,7 @@ implicit val strToInt: String => Int =
 ## Decoding CSV with implicits
 
 ```scala
-&#x200B;`implicit` val strToInt: `String => Int` =
+&#x200B;`implicit` val strToInt: `Cell => Int` =
   Integer.parseInt
 ```
 
@@ -637,7 +710,7 @@ decodeCsv[Int](input)`    `
 
 ```scala
 decodeCsv[Int](input)
-// res5: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+// res6: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 ---
@@ -647,77 +720,306 @@ decodeCsv[Int](input)
 > When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit `S => T`
 > in scope, it will be applied silently.
 
-This is called implicit conversion, and can result in some tricky behaviours:
-
---
-
 ```scala
+implicit val strToInt: String => Int =
+  Integer.parseInt
+
 def add1(i: Int): Int = i + 1
-// add1: (i: Int)Int
-
-add1("123")
-// res6: Int = 124
 ```
-
---
-
-Strictly equivalent to:
 
 ```scala
-add1(strToInt("123"))
+add1("123")
 ```
 
-???
 
-* Implicit search is also one of the slowest parts of the compiler. Bringing implicit functions in scope can
-  slow compilation quite a bit.
+---
+
+## The dangers of implicits
+
+> When .highlight[the compiler finds a type `S`] where it expects a type `T`, but there exists an implicit `S => T`
+> in scope, it will be applied silently.
+
+```scala
+implicit val strToInt: String => Int =
+  Integer.parseInt
+
+def add1(i: Int): Int = i + 1
+```
+
+```scala
+add1(`"123"`)
+```
+
+---
+
+## The dangers of implicits
+
+> When the compiler finds a type `S` where .highlight[it expects a type `T`], but there exists an implicit `S => T`
+> in scope, it will be applied silently.
+
+```scala
+implicit val strToInt: String => Int =
+  Integer.parseInt
+
+def add1(`i: Int`): Int = i + 1
+```
+
+```scala
+add1("123")
+```
+
+---
+
+## The dangers of implicits
+
+> When the compiler finds a type `S` where it expects a type `T`, but .highlight[there exists an implicit `S => T`]
+> in scope, it will be applied silently.
+
+```scala
+&#x200B;`implicit` val strToInt: `String => Int` =
+  Integer.parseInt
+
+def add1(i: Int): Int = i + 1
+```
+
+```scala
+add1("123")
+```
+
+---
+
+## The dangers of implicits
+
+> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit `S => T`
+> in scope, .highlight[it will be applied silently].
+
+```scala
+implicit val strToInt: String => Int =
+  Integer.parseInt
+
+def add1(i: Int): Int = i + 1
+```
+
+```scala
+add1(`strToInt("123")`)
+```
+
+---
+
+## The dangers of implicits
+
+> When the compiler finds a type `S` where it expects a type `T`, but there exists an implicit `S => T`
+> in scope, it will be applied silently.
+
+```scala
+implicit val strToInt: String => Int =
+  Integer.parseInt
+
+def add1(i: Int): Int = i + 1
+```
+
+```scala
+add1("123")
+// res8: Int = 124
+```
 
 ---
 
 ## Using a decoder type
 
-To avoid the pitfalls of arbitrary implicit conversions, declare a dedicated type:
+```scala
+trait CellDecoder[T] {
+  def decode(cell: Cell): T
+}
+```
+
+---
+
+## Using a decoder type
+
+```scala
+trait `CellDecoder[T]` {
+  def decode(cell: Cell): T
+}
+```
+
+---
+
+## Using a decoder type
 
 ```scala
 trait CellDecoder[T] {
-  def decode(cell: String): T
+  `def decode(cell: Cell): T`
 }
-
-implicit val intCellDecoder: CellDecoder[Int] =
-  new CellDecoder[Int] {
-    override def decode(cell: String) = cell.toInt
-  }
 ```
 
---
+---
 
-We just invented _type classes_.
+## Using a decoder type
+
+```scala
+trait CellDecoder[T] {
+  def decode(`cell: Cell`): T
+}
+```
+
+---
+
+## Using a decoder type
+
+```scala
+trait CellDecoder[T] {
+  def decode(cell: Cell): `T`
+}
+```
+
+---
+
+## Using a decoder type
+
+```scala
+object CellDecoder {
+  def from[T](
+    f: Cell => T
+  ) = new CellDecoder[T] {
+    override def decode(cell: Cell) = f(cell)
+  }
+}
+```
+
+---
+
+## Using a decoder type
+
+```scala
+&#x200B;`object CellDecoder` {
+  def from[T](
+    f: Cell => T
+  ) = new CellDecoder[T] {
+    override def decode(cell: Cell) = f(cell)
+  }
+}
+```
+
+---
+
+## Using a decoder type
+
+```scala
+object CellDecoder {
+  `def from[T]`(
+    f: Cell => T
+  ) = `new CellDecoder[T]` {
+    override def decode(cell: Cell) = f(cell)
+  }
+}
+```
+
+---
+
+## Using a decoder type
+
+```scala
+object CellDecoder {
+  def from[T](
+    `f: Cell => T`
+  ) = new CellDecoder[T] {
+    override `def decode(cell: Cell) = f(cell)`
+  }
+}
+```
+
+---
+
+## Using a decoder type
+
+```scala
+implicit val intCellDecoder =
+  CellDecoder.from(_.toInt)
+```
+
+---
+
+## Using a decoder type
+
+```scala
+implicit val intCellDecoder =
+  CellDecoder.from(`_.toInt`)
+```
 
 ---
 
 ## Type class backed decoder
 
-We can now rewrite `decodeCsv`:
-
 ```scala
-def decodeCsv[A](input: String)
-                (implicit da: CellDecoder[A]): List[List[A]] =
+def decodeCsv[A]
+  (input: String)
+  (implicit da: CellDecoder[A])
+ : List[List[A]] =
   parseCsv(input).
     map(_.map(da.decode))
 ```
 
---
+---
 
-And run it as expected:
+## Type class backed decoder
+
+```scala
+def decodeCsv[A]
+  (input: String)
+  (implicit `da: CellDecoder[A]`)
+ : List[List[A]] =
+  parseCsv(input).
+    map(_.map(da.decode))
+```
+
+---
+
+## Type class backed decoder
+
+```scala
+def decodeCsv[A]
+  (input: String)
+  (implicit da: CellDecoder[A])
+ : List[List[A]] =
+  parseCsv(input).
+    map(_.map(`da.decode`))
+```
+
+
+---
+
+## Type class backed decoder
 
 ```scala
 decodeCsv[Int](input)
-// res8: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
-???
+---
 
-There is a better syntax for this: context bounds.
+## Type class backed decoder
+
+```scala
+decodeCsv[`Int`](input)
+```
+
+---
+
+## Type class backed decoder
+
+```scala
+decodeCsv[Int](input)`   `
+```
+
+---
+
+## Type class backed decoder
+
+```scala
+decodeCsv[Int](input)
+// res10: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+```
+
 
 ---
 
@@ -843,7 +1145,7 @@ This works:
 
 ```scala
 decodeCsv[(Int, String)](input)
-// res9: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
+// res11: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
 ```
 
 --
@@ -933,7 +1235,7 @@ This produces the desired result:
 
 ```scala
 decodeCsv[(Int, String)](input)
-// res12: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
+// res14: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
 ```
 
 --
@@ -971,7 +1273,7 @@ _We've written an instance of `RowDecoder[(A, B)]` for all `A` and `B` that have
 
 ```scala
 decodeCsv[(Float, String)](input)
-// res13: List[(Float, String)] = List((1.0,Nicolas), (2.0,Jessica), (3.0,Matt))
+// res15: List[(Float, String)] = List((1.0,Nicolas), (2.0,Jessica), (3.0,Matt))
 ```
 
 We need an implicit `RowDecoder[(Float, String)]`.
@@ -1036,7 +1338,7 @@ This yields the expected result:
 
 ```scala
 decodeCsv[(Option[Int], String)](input)
-// res16: List[(Option[Int], String)] = List((Some(1),Nicolas), (None,Jessica), (Some(3),Matt))
+// res18: List[(Option[Int], String)] = List((Some(1),Nicolas), (None,Jessica), (Some(3),Matt))
 ```
 
 --
@@ -1080,7 +1382,7 @@ This yields the expected result:
 
 ```scala
 decodeCsv[(Either[Int, Boolean], String)](input)
-// res17: List[(Either[Int,Boolean], String)] = List((Left(1),Nicolas), (Right(true),Jessica))
+// res19: List[(Either[Int,Boolean], String)] = List((Left(1),Nicolas), (Right(true),Jessica))
 ```
 
 --
@@ -1107,7 +1409,7 @@ We already have `Either` and `Option` instances, so we get this for free:
 
 ```scala
 decodeCsv[(Option[Either[Int, Boolean]], String)](input)
-// res18: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1)),Nicolas), (Some(Right(false)),Jessica), (None,Matt))
+// res20: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1)),Nicolas), (Some(Right(false)),Jessica), (None,Matt))
 ```
 
 ---
@@ -1154,13 +1456,13 @@ This yields the expected result:
 
 ```scala
 decodeCsv[List[Int]](input)
-// res19: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6))
+// res21: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6))
 
 decodeCsv[Vector[Int]](input)
-// res20: List[Vector[Int]] = List(Vector(1, 2, 3), Vector(4, 5, 6))
+// res22: List[Vector[Int]] = List(Vector(1, 2, 3), Vector(4, 5, 6))
 
 decodeCsv[Array[Int]](input)
-// res21: List[Array[Int]] = List(Array(1, 2, 3), Array(4, 5, 6))
+// res23: List[Array[Int]] = List(Array(1, 2, 3), Array(4, 5, 6))
 ```
 
 --
@@ -1200,7 +1502,7 @@ We can now do:
 
 ```scala
 decodeCell[Int]("123")
-// res22: Int = 123
+// res24: Int = 123
 ```
 
 ---
@@ -1270,7 +1572,7 @@ This lets us write:
 
 ```scala
 "123".decodeCell[Int]
-// res23: Int = 123
+// res25: Int = 123
 ```
 
 ---
@@ -1321,7 +1623,7 @@ implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
 
 ```scala
 implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res24: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@2efa8273
+// res26: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@58594987
 ```
 
 ---
