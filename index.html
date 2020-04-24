@@ -198,12 +198,11 @@ def parseCsv(data: String): `Csv` =
 
 ## Parsing CSV
 
+
 ```scala
-val input = "1,2,3\n4,5,6\n7,8,9"
-// input: String =
-// 1,2,3
-// 4,5,6
-// 7,8,9
+val input = """1,2,3
+              |4,5,6
+              |7,8,9"""
 ```
 
 --
@@ -519,7 +518,7 @@ printInt
 
 ## Implicit resolution
 
-> When a function expects a .highlight[parameter of type `T`] _and_ that parameter is marked as `implicit` _and_ there exists a
+> When .highlight[a function expects a parameter of type `T`] _and_ that parameter is marked as `implicit` _and_ there exists a
 > value of type `T` marked as `implicit` in scope, then the compiler will use that value if the parameter is unspecified.
 
 ```scala
@@ -731,7 +730,6 @@ def add1(i: Int): Int = i + 1
 add1("123")
 ```
 
-
 ---
 
 ## The dangers of implicits
@@ -934,8 +932,17 @@ object CellDecoder {
 ## Using a decoder type
 
 ```scala
-implicit val intCellDecoder =
+implicit val intCellDecoder: CellDecoder[Int] =
   CellDecoder.from(_.toInt)
+
+implicit val floatCellDecoder: CellDecoder[Float] =
+  CellDecoder.from(_.toFloat)
+
+implicit val stringCellDecoder: CellDecoder[String] =
+  CellDecoder.from(identity)
+
+implicit val booleanCellDecoder: CellDecoder[Boolean] =
+  CellDecoder.from(_.toBoolean)
 ```
 
 ---
@@ -943,8 +950,71 @@ implicit val intCellDecoder =
 ## Using a decoder type
 
 ```scala
-implicit val intCellDecoder =
+implicit val intCellDecoder: `CellDecoder[Int]` =
   CellDecoder.from(`_.toInt`)
+
+implicit val floatCellDecoder: CellDecoder[Float] =
+  CellDecoder.from(_.toFloat)
+
+implicit val stringCellDecoder: CellDecoder[String] =
+  CellDecoder.from(identity)
+
+implicit val booleanCellDecoder: CellDecoder[Boolean] =
+  CellDecoder.from(_.toBoolean)
+```
+
+---
+
+## Using a decoder type
+
+```scala
+implicit val intCellDecoder: CellDecoder[Int] =
+  CellDecoder.from(_.toInt)
+
+implicit val floatCellDecoder: `CellDecoder[Float]` =
+  CellDecoder.from(`_.toFloat`)
+
+implicit val stringCellDecoder: CellDecoder[String] =
+  CellDecoder.from(identity)
+
+implicit val booleanCellDecoder: CellDecoder[Boolean] =
+  CellDecoder.from(_.toBoolean)
+```
+
+---
+
+## Using a decoder type
+
+```scala
+implicit val intCellDecoder: CellDecoder[Int] =
+  CellDecoder.from(_.toInt)
+
+implicit val floatCellDecoder: CellDecoder[Float] =
+  CellDecoder.from(_.toFloat)
+
+implicit val stringCellDecoder: `CellDecoder[String]` =
+  CellDecoder.from(`identity`)
+
+implicit val booleanCellDecoder: CellDecoder[Boolean] =
+  CellDecoder.from(_.toBoolean)
+```
+
+---
+
+## Using a decoder type
+
+```scala
+implicit val intCellDecoder: CellDecoder[Int] =
+  CellDecoder.from(_.toInt)
+
+implicit val floatCellDecoder: CellDecoder[Float] =
+  CellDecoder.from(_.toFloat)
+
+implicit val stringCellDecoder: CellDecoder[String] =
+  CellDecoder.from(identity)
+
+implicit val booleanCellDecoder: `CellDecoder[Boolean]` =
+  CellDecoder.from(`_.toBoolean`)
 ```
 
 ---
@@ -986,7 +1056,6 @@ def decodeCsv[A]
     map(_.map(`da.decode`))
 ```
 
-
 ---
 
 ## Type class backed decoder
@@ -1020,34 +1089,22 @@ decodeCsv[Int](input)
 // res10: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
-
 ---
 
-## Enhancement without inheritance!
+## Key takeaways
 
-Important realisation: _we've added a new behaviour to `Int`, even though it's `final`_.
+--
+We have made `decodeCsv` polymorphic by using:
+
+--
+* parametric polymorphism.
+
+--
+* implicit resolution.
 
 --
 
-Think about implementing the same with subtyping:
-
-* create a `Decodable` interface.
-
---
-
-* have `Int` implement `Decodable`.
-
---
-
-* but `Int` is final...
-
---
-
-* create... `WrappedInt` that implements `Decodable` and proxies all calls to `Int`?
-
---
-
-* 😱
+`CellDecoder` is known as a type class.
 
 ---
 
@@ -1059,37 +1116,138 @@ class: center, middle
 
 ## Heterogenous types
 
-`decodeCsv` can decode our input. But what about:
-
-```scala
-val input = "1,Nicolas\n2,Jessica\n3,Matt"
-// input: String =
-// 1,Nicolas
-// 2,Jessica
-// 3,Matt
+```csv
+1997,Ford
+2000,Mercury
 ```
 
---
+---
 
-This could be decoded as a `(Int, String)`.
+## Heterogenous types
 
-Problem: we only know how to decode rows of homogenous types.
+```csv
+&#x200B;`1997`,Ford
+&#x200B;`2000`,Mercury
+```
+
+---
+
+## Heterogenous types
+
+```csv
+1997,`Ford`
+2000,`Mercury`
+```
 
 ---
 
 ## `RowDecoder` type class
 
-We need a decoder type class for rows:
-
 ```scala
 trait RowDecoder[T] {
-  def decode(cells: List[String]): T
+  def decode(row: Row): T
 }
 ```
 
---
+---
 
-`decodeCsv` now looks like:
+## `RowDecoder` type class
+
+```scala
+trait `RowDecoder[T]` {
+  def decode(row: Row): T
+}
+```
+
+---
+
+## `RowDecoder` type class
+
+```scala
+trait RowDecoder[T] {
+  `def decode(row: Row): T`
+}
+```
+
+---
+
+## `RowDecoder` type class
+
+```scala
+trait RowDecoder[T] {
+  def decode(`row: Row`): T
+}
+```
+
+---
+
+## `RowDecoder` type class
+
+```scala
+trait RowDecoder[T] {
+  def decode(row: Row): `T`
+}
+```
+
+---
+
+## `RowDecoder` type class
+
+```scala
+object RowDecoder {
+  def from[T](
+    f: Row => T
+  ) = new RowDecoder[T] {
+    override def decode(row: Row) = f(row)
+  }
+}
+```
+
+---
+
+## `RowDecoder` type class
+
+```scala
+&#x200B;`object RowDecoder` {
+  def from[T](
+    f: Row => T
+  ) = new RowDecoder[T] {
+    override def decode(row: Row) = f(row)
+  }
+}
+```
+
+---
+
+## `RowDecoder` type class
+
+```scala
+object RowDecoder {
+  `def from[T]`(
+    f: Row => T
+  ) = `new RowDecoder[T]` {
+    override def decode(row: Row) = f(row)
+  }
+}
+```
+
+---
+
+## `RowDecoder` type class
+
+```scala
+object RowDecoder {
+  def from[T](
+    `f: Row => T`
+  ) = new RowDecoder[T] {
+    override `def decode(row: Row) = f(row)`
+  }
+}
+```
+
+---
+
+## `RowDecoder` type class
 
 ```scala
 def decodeCsv[A](input: String)
@@ -1100,77 +1258,171 @@ def decodeCsv[A](input: String)
 
 ---
 
-## First, a bit of plumbing
-
-Let's make instance creation less of a pain:
+## `RowDecoder` type class
 
 ```scala
-def cellDecoder[A](f: String => A) = new CellDecoder[A] {
-  override def decode(cell: String) = f(cell)
-}
-
-def rowDecoder[A](f: List[String] => A) = new RowDecoder[A] {
-  override def decode(cells: List[String]) = f(cells)
-}
-
+def decodeCsv[A](input: String)
+                (implicit `da: RowDecoder[A]`): List[A] =
+  parseCsv(input).
+    map(da.decode)
 ```
 
---
+---
 
-Also, create a bunch of useful `CellDecoder` instances:
+## `RowDecoder` type class
 
 ```scala
-implicit val intCellDecoder     = cellDecoder(_.toInt)
-implicit val floatCellDecoder   = cellDecoder(_.toFloat)
-implicit val stringCellDecoder  = cellDecoder(identity)
-implicit val booleanCellDecoder = cellDecoder(_.toBoolean)
+def decodeCsv[A](input: String)
+                (implicit da: RowDecoder[A]): List[A] =
+  parseCsv(input).
+    `map(da.decode)`
 ```
 
-???
+---
 
-Default instances should be declared in the companion object, it's just not very convenient here.
+## `RowDecoder` type class
+
+```scala
+def decodeCsv[A](input: String)
+                (implicit da: RowDecoder[A]): `List[A]` =
+  parseCsv(input).
+    map(da.decode)
+```
 
 ---
 
 ## First attempt at decoding tuples
 
 ```scala
-implicit val tupleDecoder: RowDecoder[(Int, String)] =
-  rowDecoder(cells => (cells(0).toInt, cells(1)))
+implicit val tupleDecoder = RowDecoder.from[(Int, String)] {
+  row => (
+    row(0).toInt,
+    row(1)
+  )
+}
 ```
 
---
+---
 
-This works:
+## First attempt at decoding tuples
 
 ```scala
-decodeCsv[(Int, String)](input)
-// res11: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
+&#x200B;`implicit` val tupleDecoder = `RowDecoder`.from[`(Int, String)`] {
+  row => (
+    row(0).toInt,
+    row(1)
+  )
+}
 ```
 
---
 
-Disapointing, though: decoding of individual cells is hard-coded.
+---
 
-Didn't we just write a mechanism for that?
+## First attempt at decoding tuples
+
+```scala
+implicit val tupleDecoder = RowDecoder.from[(Int, String)] {
+  `row` => (
+    row(0).toInt,
+    row(1)
+  )
+}
+```
+
+---
+
+## First attempt at decoding tuples
+
+```scala
+implicit val tupleDecoder = RowDecoder.from[(Int, String)] {
+  row => (
+    `row(0).toInt`,
+    row(1)
+  )
+}
+```
+
+---
+
+## First attempt at decoding tuples
+
+```scala
+implicit val tupleDecoder = RowDecoder.from[(Int, String)] {
+  row => (
+    row(0).toInt,
+    `row(1)`
+  )
+}
+```
+
+---
+
+## First attempt at decoding tuples
+
+```scala
+implicit val tupleDecoder = RowDecoder.from[(Int, String)] {
+  row => `(`
+    row(0).toInt,
+    row(1)
+  `)`
+}
+```
+
+---
+
+## First attempt at decoding tuples
+
+```scala
+implicit val tupleDecoder = RowDecoder.from[(Int, String)] {
+  row => (
+    `row(0).toInt`,
+    `row(1)`
+  )
+}
+```
+
 
 ---
 
 ## Using `CellDecoder`, take 1
 
-Naive implementation:
 
 ```scala
-implicit val tupleDecoder: RowDecoder[(Int, String)] =
-  rowDecoder { cells => (
-    intCellDecoder.decode(cells(0)),
-    stringCellDecoder.decode(cells(1))
-  )}
+implicit val tupleDecoder = RowDecoder.from[(Int, String)] {
+  row => (
+    intCellDecoder.decode(row(0)),
+    stringCellDecoder.decode(row(1))
+  )
+}
 ```
 
---
+---
 
-The decoder instances are hard-coded - always a sign that things can be made more generic.
+## Using `CellDecoder`, take 1
+
+
+```scala
+implicit val tupleDecoder = RowDecoder.from[(Int, String)] {
+  row => (
+    `intCellDecoder.decode(row(0))`,
+    `stringCellDecoder.decode(row(1))`
+  )
+}
+```
+
+---
+
+## Using `CellDecoder`, take 1
+
+
+```scala
+implicit `val` tupleDecoder = RowDecoder.from[(Int, String)] {
+  row => (
+    intCellDecoder.decode(row(0)),
+    stringCellDecoder.decode(row(1))
+  )
+}
+```
 
 ---
 
@@ -1179,9 +1431,6 @@ The decoder instances are hard-coded - always a sign that things can be made mor
 > When the compiler looks for an implicit value of type `T` and finds an implicit function that returns a `T` that
 > it can call, it will use its return value.
 
----
-
-## Implicit resolution revisited
 
 ```scala
 implicit val defaultDouble: Double = 3.0
@@ -1191,186 +1440,680 @@ implicit def getFloat(implicit d: Double): Float = d.toFloat
 def printFloat(implicit f: Float): Unit = println(f)
 ```
 
---
+```scala
+printFloat
+```
 
-Running `printFloat` without a parameter:
+---
+
+## Implicit resolution revisited
+
+> When the .highlight[compiler looks for an implicit value of type `T`] and finds an implicit function that returns a `T` that
+> it can call, it will use its return value.
+
+
+```scala
+implicit val defaultDouble: Double = 3.0
+
+implicit def getFloat(implicit d: Double): Float = d.toFloat
+
+def printFloat(implicit f: Float): Unit = println(f)
+```
+
+```scala
+printFloat`   `
+```
+
+---
+
+## Implicit resolution revisited
+
+> When the .highlight[compiler looks for an implicit value of type `T`] and finds an implicit function that returns a `T` that
+> it can call, it will use its return value.
+
+
+```scala
+implicit val defaultDouble: Double = 3.0
+
+implicit def getFloat(implicit d: Double): Float = d.toFloat
+
+def printFloat(`implicit f: Float`): Unit = println(f)
+```
+
+```scala
+printFloat
+```
+
+---
+
+## Implicit resolution revisited
+
+> When the compiler looks for an implicit value of type `T` and .highlight[finds an implicit function that returns a `T`] that
+> it can call, it will use its return value.
+
+
+```scala
+implicit val defaultDouble: Double = 3.0
+
+&#x200B;`implicit def getFloat`(implicit d: Double): `Float` = d.toFloat
+
+def printFloat(implicit f: Float): Unit = println(f)
+```
+
+```scala
+printFloat
+```
+
+---
+
+## Implicit resolution revisited
+
+> When the compiler looks for an implicit value of type `T` and finds an implicit function that returns a `T` that
+> .highlight[it can call], it will use its return value.
+
+
+```scala
+implicit val defaultDouble: Double = 3.0
+
+implicit def getFloat(`implicit d: Double`): Float = d.toFloat
+
+def printFloat(implicit f: Float): Unit = println(f)
+```
+
+```scala
+printFloat
+```
+
+---
+
+## Implicit resolution revisited
+
+> When the compiler looks for an implicit value of type `T` and finds an implicit function that returns a `T` that
+> .highlight[it can call], it will use its return value.
+
+
+```scala
+&#x200B;`implicit val defaultDouble: Double` = 3.0
+
+implicit def getFloat(implicit d: Double): Float = d.toFloat
+
+def printFloat(implicit f: Float): Unit = println(f)
+```
+
+```scala
+printFloat
+```
+
+---
+
+## Implicit resolution revisited
+
+> When the compiler looks for an implicit value of type `T` and finds an implicit function that returns a `T` that
+> it can call, .highlight[it will use its return value].
+
+
+```scala
+implicit val defaultDouble: Double = 3.0
+
+implicit def getFloat(implicit d: Double): Float = d.toFloat
+
+def printFloat(implicit f: Float): Unit = println(f)
+```
+
+```scala
+printFloat`(getFloat)`
+```
+
+---
+
+## Implicit resolution revisited
+
+> When the compiler looks for an implicit value of type `T` and finds an implicit function that returns a `T` that
+> it can call, .highlight[it will use its return value].
+
+
+```scala
+implicit val defaultDouble: Double = 3.0
+
+implicit def getFloat(implicit d: Double): Float = d.toFloat
+
+def printFloat(implicit f: Float): Unit = println(f)
+```
+
+```scala
+printFloat`(getFloat(defaultDouble))`
+```
+
+---
+
+## Implicit resolution revisited
+
+> When the compiler looks for an implicit value of type `T` and finds an implicit function that returns a `T` that
+> it can call, .highlight[it will use its return value].
+
+
+```scala
+implicit val defaultDouble: Double = 3.0
+
+implicit def getFloat(implicit d: Double): Float = d.toFloat
+
+def printFloat(implicit f: Float): Unit = println(f)
+```
 
 ```scala
 printFloat
 // 3.0
 ```
 
---
-
-Strictly equivalent to:
-
-```scala
-printFloat(getFloat(defaultDouble))
-```
-
-???
-
-This can be a bit hard to follow, go through the steps:
-- `printFloat` looks for an implicit `Float`
-- `getFloat` might produce an implicit `Float`, but needs an implicit `Double`
-- `double` is an implicit `Double`
-
 ---
 
 ## Using `CellDecoder`, take 2
 
-Better implementation:
-
 ```scala
 implicit def tupleDecoder(
-    implicit di: CellDecoder[Int],
-             ds: CellDecoder[String]
-  ): RowDecoder[(Int, String)] =
-  rowDecoder(cells => (di.decode(cells(0)), ds.decode(cells(1))))
-```
-
---
-
-This produces the desired result:
-
-```scala
-decodeCsv[(Int, String)](input)
-// res14: List[(Int, String)] = List((1,Nicolas), (2,Jessica), (3,Matt))
-```
-
---
-
-`Int` and `String` are hard-coded, but not used - a strong hint that they should be type parameters.
-
----
-
-## Using `CellDecoder`, take 3
-
-Fully generic implementation:
-
-```scala
-implicit def tupleDecoder[A, B](
-    implicit da: CellDecoder[A],
-             db: CellDecoder[B]
-  ): RowDecoder[(A, B)] =
-  rowDecoder(cells => (da.decode(cells(0)), db.decode(cells(1))))
-```
-
-???
-
-You can think of the implicit parameters as constraints on `A` and `B` - `decode` accepts any two types `A` and `B`
-that fulfill the constraint of being decodable as cells.
-
---
-
-Take a minute to let that sink in:
-
-_We've written an instance of `RowDecoder[(A, B)]` for all `A` and `B` that have a `CellDecoder` instance_.
-
----
-
-## Implicit resolution steps
-
-```scala
-decodeCsv[(Float, String)](input)
-// res15: List[(Float, String)] = List((1.0,Nicolas), (2.0,Jessica), (3.0,Matt))
-```
-
-We need an implicit `RowDecoder[(Float, String)]`.
-
---
-
-`tupleDecoder` might produce one:
-
-```scala
-decodeCsv(input)(tupleDecoder[Float, String])
-```
-
-We now need implicit `CellDecoder[Float]` and `CellDecoder[String]` instances.
-
---
-
-`floatCellDecoder` and `stringCellDecoder` work:
-
-```scala
-decodeCsv(input)(tupleDecoder(floatCellDecoder, stringCellDecoder))
-```
-
-???
-
-Interesting how the type parameters move to the right and disappear as the compiler uses more and more specialised
-instances.
-
----
-
-## Optional cells
-
-Sometimes, CSV cells are absent or empty:
-
-```scala
-val input = "1,Nicolas\n,Jessica\n3,Matt"
-// input: String =
-// 1,Nicolas
-// ,Jessica
-// 3,Matt
-```
-
----
-
-## Optional cells
-
-This is what `Option` is made for.
-
-```scala
-implicit def optionCellDecoder[A](
-    implicit da: CellDecoder[A]
-  ): CellDecoder[Option[A]] = cellDecoder {
-  case "" => None
-  case s  => Some(da.decode(s))
+    implicit da: CellDecoder[Int],
+             db: CellDecoder[String]
+  ) = RowDecoder.from[(Int, String)] {
+  row => (
+    da.decode(row(0)),
+    db.decode(row(1))
+  )
 }
 ```
 
 ---
 
+## Using `CellDecoder`, take 2
+
+```scala
+implicit `def` tupleDecoder(
+    implicit da: CellDecoder[Int],
+             db: CellDecoder[String]
+  ) = RowDecoder.from[(Int, String)] {
+  row => (
+    da.decode(row(0)),
+    db.decode(row(1))
+  )
+}
+```
+
+---
+
+## Using `CellDecoder`, take 2
+
+```scala
+implicit def tupleDecoder(
+    implicit `da: CellDecoder[Int]`,
+             db: CellDecoder[String]
+  ) = RowDecoder.from[(Int, String)] {
+  row => (
+    `da.decode(row(0))`,
+    db.decode(row(1))
+  )
+}
+```
+
+---
+
+## Using `CellDecoder`, take 2
+
+```scala
+implicit def tupleDecoder(
+    implicit da: CellDecoder[Int],
+             `db: CellDecoder[String]`
+  ) = RowDecoder.from[(Int, String)] {
+  row => (
+    da.decode(row(0)),
+    `db.decode(row(1))`
+  )
+}
+```
+
+---
+
+## Using `CellDecoder`, take 2
+
+```scala
+implicit def tupleDecoder(
+    `implicit` da: CellDecoder[Int],
+             db: CellDecoder[String]
+  ) = RowDecoder.from[(Int, String)] {
+  row => (
+    da.decode(row(0)),
+    db.decode(row(1))
+  )
+}
+```
+
+---
+
+## Using `CellDecoder`, take 2
+
+```scala
+implicit def tupleDecoder(
+    implicit da: CellDecoder[`Int`],
+             db: CellDecoder[`String`]
+  ) = RowDecoder.from[`(Int, String)`] {
+  row => (
+    da.decode(row(0)),
+    db.decode(row(1))
+  )
+}
+```
+
+---
+
+## Using `CellDecoder`, take 3
+
+```scala
+implicit def tupleDecoder[A, B](
+    implicit da: CellDecoder[A],
+             db: CellDecoder[B]
+  ) = RowDecoder.from[(A, B)] {
+  row => (
+    da.decode(row(0)),
+    db.decode(row(1))
+  )
+}
+```
+
+---
+
+## Using `CellDecoder`, take 3
+
+```scala
+implicit def tupleDecoder[`A, B`](
+    implicit da: CellDecoder[`A`],
+             db: CellDecoder[`B`]
+  ) = RowDecoder.from[`(A, B)`] {
+  row => (
+    da.decode(row(0)),
+    db.decode(row(1))
+  )
+}
+```
+
+---
+
+## Using `CellDecoder`, take 3
+
+```scala
+implicit def tupleDecoder[A, B](
+*   implicit da: CellDecoder[A],
+*            db: CellDecoder[B]
+  ) = RowDecoder.from[(A, B)] {
+  row => (
+    da.decode(row(0)),
+    db.decode(row(1))
+  )
+}
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+implicit def tupleDecoder[
+  A: CellDecoder,
+  B: CellDecoder
+] = RowDecoder.from[(A, B)] {
+  row => (
+    implicitly[CellDecoder[A]].decode(row(0)),
+    implicitly[CellDecoder[B]].decode(row(1))
+  )
+}
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+implicit def tupleDecoder[
+  `A: CellDecoder`,
+  `B: CellDecoder`
+] = RowDecoder.from[(A, B)] {
+  row => (
+    implicitly[CellDecoder[A]].decode(row(0)),
+    implicitly[CellDecoder[B]].decode(row(1))
+  )
+}
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+implicit def tupleDecoder[
+  A: CellDecoder,
+  B: CellDecoder
+] = RowDecoder.from[(A, B)] {
+  row => (
+    `implicitly[CellDecoder[A]]`.decode(row(0)),
+    `implicitly[CellDecoder[B]]`.decode(row(1))
+  )
+}
+```
+
+
+---
+
+## TODO TODO TODO
+
+```scala
+object CellDecoder {
+  def from[T](
+    f: Cell => T
+  ) = new CellDecoder[T] {
+    override def decode(cell: Cell) = f(cell)
+  }
+
+  def apply[T](implicit dt: CellDecoder[T]): CellDecoder[T] = dt
+}
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+object CellDecoder {
+  def from[T](
+    f: Cell => T
+  ) = new CellDecoder[T] {
+    override def decode(cell: Cell) = f(cell)
+  }
+
+  `def apply[T](implicit dt: CellDecoder[T]): CellDecoder[T] = dt`
+}
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+object CellDecoder {
+  def from[T](
+    f: Cell => T
+  ) = new CellDecoder[T] {
+    override def decode(cell: Cell) = f(cell)
+  }
+
+  def apply[T](`implicit dt: CellDecoder[T]`): CellDecoder[T] = dt
+}
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+object CellDecoder {
+  def from[T](
+    f: Cell => T
+  ) = new CellDecoder[T] {
+    override def decode(cell: Cell) = f(cell)
+  }
+
+  def apply[T](implicit dt: CellDecoder[T]): CellDecoder[T] = `dt`
+}
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+implicit def tupleDecoder[
+  A: CellDecoder,
+  B: CellDecoder
+] = RowDecoder.from[(A, B)] {
+  row => (
+    CellDecoder[A].decode(row(0)),
+    CellDecoder[B].decode(row(1))
+  )
+}
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+implicit def tupleDecoder[
+  A: CellDecoder,
+  B: CellDecoder
+] = RowDecoder.from[(A, B)] {
+  row => (
+    `CellDecoder[A]`.decode(row(0)),
+    `CellDecoder[B]`.decode(row(1))
+  )
+}
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+implicit def tupleDecoder[
+  A: CellDecoder,
+  B: CellDecoder
+] = RowDecoder.from[(A, B)] {
+  row => (
+    `CellDecoder[A]`.decode(row(0)),
+    CellDecoder[B].decode(row(1))
+  )
+}
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+implicit def tupleDecoder[
+  `A: CellDecoder`,
+  B: CellDecoder
+] = RowDecoder.from[(A, B)] {
+  row => (
+    CellDecoder[A].decode(row(0)),
+    CellDecoder[B].decode(row(1))
+  )
+}
+```
+
+
+---
+
+## Heterogenous types
+
+```scala
+val input = """1997,Ford
+              |2000,Mercury"""
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+decodeCsv[(Int, String)](input)
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+decodeCsv[`(Int, String)`](input)
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+decodeCsv[(Int, String)](input)`   `
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+decodeCsv(input)(tupleDecoder[Int, String])
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+decodeCsv(input)`(tupleDecoder[Int, String])`
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+decodeCsv(input)(tupleDecoder[Int, String]`   `)
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+decodeCsv(input)(tupleDecoder(intCellDecoder, stringCellDecoder))
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+decodeCsv(input)(tupleDecoder`(intCellDecoder, stringCellDecoder)`)
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+decodeCsv(input)(tupleDecoder(intCellDecoder, stringCellDecoder))
+// res16: List[(Int, String)] = List((1997,Ford), (2000,Mercury))
+```
+
+---
+
+## TODO TODO TODO
+
+```scala
+decodeCsv[(Int, String)](input)
+// res17: List[(Int, String)] = List((1997,Ford), (2000,Mercury))
+```
+
+---
+
 ## Optional cells
 
-This yields the expected result:
+```scala
+val input = """1997,Ford
+              |,Mercury"""
+```
+
+---
+
+## Optional cells
+
+```scala
+implicit def optionCellDecoder[A: CellDecoder] =
+  CellDecoder.from[Option[A]] {
+    case "" => None
+    case s  => Some(CellDecoder[A].decode(s))
+  }
+```
+
+---
+
+## Optional cells
+
+```scala
+implicit def optionCellDecoder[`A: CellDecoder`] =
+  CellDecoder.from[Option[A]] {
+    case "" => None
+    case s  => Some(CellDecoder[A].decode(s))
+  }
+```
+
+---
+
+## Optional cells
+
+```scala
+&#x200B;`implicit` def optionCellDecoder[A: CellDecoder] =
+  `CellDecoder`.from[`Option[A]`] {
+    case "" => None
+    case s  => Some(CellDecoder[A].decode(s))
+  }
+```
+
+---
+
+## Optional cells
+
+```scala
+implicit def optionCellDecoder[A: CellDecoder] =
+  CellDecoder.from[Option[A]] {
+    case `""` => `None`
+    case s  => Some(CellDecoder[A].decode(s))
+  }
+```
+
+---
+
+## Optional cells
+
+```scala
+implicit def optionCellDecoder[A: CellDecoder] =
+  CellDecoder.from[Option[A]] {
+    case "" => None
+    case `s`  => `Some(CellDecoder[A].decode(s))`
+  }
+```
+
+---
+
+## Optional cells
 
 ```scala
 decodeCsv[(Option[Int], String)](input)
-// res18: List[(Option[Int], String)] = List((Some(1),Nicolas), (None,Jessica), (Some(3),Matt))
-```
-
---
-
-_We've written an instance of `CellDecoder[Option[A]]` for all `A` that have a `CellDecoder` instance._
-
----
-
-## Cells with multiple types
-
-"Sometimes", CSV data is messy:
-
-```scala
-val input = "1,Nicolas\ntrue,Jessica"
-// input: String =
-// 1,Nicolas
-// true,Jessica
+// res18: List[(Option[Int], String)] = List((Some(1997),Ford), (None,Mercury))
 ```
 
 ---
 
 ## Cells with multiple types
 
-We have `Either` to represent these cases:
+```scala
+val input = """1997,Ford
+              |true,Mercury"""
+```
+
+---
+
+## Cells with multiple types
 
 ```scala
-implicit def eitherCellDecoder[A, B](implicit
-    da: CellDecoder[A],
-    db: CellDecoder[B]
-  ): CellDecoder[Either[A, B]] = cellDecoder { cell =>
-    try { Left(da.decode(cell)) }
-    catch { case _: Throwable => Right(db.decode(cell)) }
+implicit def eitherCellDecoder[A: CellDecoder, B: CellDecoder] =
+  CellDecoder.from[Either[A, B]] { cell =>
+    try { Left(CellDecoder[A].decode(cell)) }
+    catch { case _: Throwable => Right(CellDecoder[B].decode(cell)) }
   }
 ```
 
@@ -1378,81 +2121,58 @@ implicit def eitherCellDecoder[A, B](implicit
 
 ## Cells with multiple types
 
-This yields the expected result:
-
 ```scala
 decodeCsv[(Either[Int, Boolean], String)](input)
-// res19: List[(Either[Int,Boolean], String)] = List((Left(1),Nicolas), (Right(true),Jessica))
+// res19: List[(Either[Int,Boolean], String)] = List((Left(1997),Ford), (Right(true),Mercury))
 ```
-
---
-
-_We've written an instance of `CellDecoder[Either[A, B]]` for all `A` and `B` that have a `CellDecoder` instance._
 
 ---
 
 ## Complex compositions
 
 ```scala
-val input = "1,Nicolas\nfalse,Jessica\n,Matt"
-// input: String =
-// 1,Nicolas
-// false,Jessica
-// ,Matt
+val input = """1997,Ford
+              |false,Mercury
+              |,Chevy"""
 ```
 
-The first column looks like an `Option[Either[Int, Boolean]]`.
+---
 
---
-
-We already have `Either` and `Option` instances, so we get this for free:
+## Complex compositions
 
 ```scala
 decodeCsv[(Option[Either[Int, Boolean]], String)](input)
-// res20: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1)),Nicolas), (Some(Right(false)),Jessica), (None,Matt))
+// res20: List[(Option[Either[Int,Boolean]], String)] = List((Some(Left(1997)),Ford), (Some(Right(false)),Mercury), (None,Chevy))
 ```
 
 ---
 
 ## Collections of values
-
-We have lost the ability to decode a row as `List[Int]` on the way:
 
 ```scala
-val input = "1,2,3\n4,5,6"
-// input: String =
-// 1,2,3
-// 4,5,6
+val input = """1,2,3
+              |4,5,6"""
 ```
 
 ---
 
 ## Collections of values
-
-"Easily" fixed (warning -
-uses [`CanBuildFrom`](http://www.scala-lang.org/api/2.11.8/#scala.collection.generic.CanBuildFrom)):
 
 ```scala
 import scala.collection.generic.CanBuildFrom
 
-implicit def cbfDecoder[A, F[_]](
-    implicit da: CellDecoder[A],
-             cbf: CanBuildFrom[Nothing, A, F[A]]
-  ): RowDecoder[F[A]] =
-  rowDecoder(_.foldLeft(cbf.apply()) { (out, s) =>
-    out += da.decode(s)
-  }.result())
+implicit def cbfDecoder[A: CellDecoder, F[_]](
+    implicit cbf: CanBuildFrom[Nothing, A, F[A]]
+  ) =  RowDecoder.from[F[A]] { row =>
+    row.foldLeft(cbf.apply()) { (out, s) =>
+      out += CellDecoder[A].decode(s)
+    }.result()
+  }
 ```
-
-???
-
-Ignore the `CanBuildFrom` type - it's needlessly complicated and out of scope.
 
 ---
 
 ## Collections of values
-
-This yields the expected result:
 
 ```scala
 decodeCsv[List[Int]](input)
@@ -1464,10 +2184,6 @@ decodeCsv[Vector[Int]](input)
 decodeCsv[Array[Int]](input)
 // res23: List[Array[Int]] = List(Array(1, 2, 3), Array(4, 5, 6))
 ```
-
---
-
-_We've written an instance of `RowDecoder[F[A]]` for any collection `F` and any `A` that has a `CellDecoder` instance._
 
 ---
 
@@ -1483,148 +2199,15 @@ We *could* write a `RowDecoder[A]` instance for any case class `A`…
 
 class: center, middle
 
-# Tips & Tricks
+# In closing
 
 ---
 
-## Cell decoding helper
-
-Having a method to decode a string into an arbitrary type would be helpful, if only for REPL debugging:
-
-```scala
-def decodeCell[A](cell: String)(implicit da: CellDecoder[A]): A =
-  da.decode(cell)
-```
-
---
-
-We can now do:
-
-```scala
-decodeCell[Int]("123")
-// res24: Int = 123
-```
-
----
-
-## Context bounds
-
-_Context bounds_ offer a more pleasant syntax:
-
-```scala
-def decodeCell[A: CellDecoder](cell: String): A =
-  implicitly[CellDecoder[A]].decode(cell)
-```
-
---
-
-`decodeCell`'s type signature is now clearer and easier to read.
-
---
-
-`decodeCell`'s _body_, on the other hand...
-
----
-
-## Instance summoning methods
-
-It's good practice to provide an instance summoning `apply` method in the companion object:
-
-```scala
-object CellDecoder {
-  def apply[A](implicit da: CellDecoder[A]): CellDecoder[A] = da
-}
-```
-
---
-
-We can now rewrite `decodeCell`:
-
-```scala
-def decodeCell[A: CellDecoder](cell: String): A =
-  CellDecoder[A].decode(cell)
-```
-
---
-
-⚠️️ Note that this has a cost - the implicit instance is resolved through a method call.
-
-[Erik Osheim](https://twitter.com/d6/)'s [imp](https://github.com/non/imp) addresses this issue elegantly.
-
----
-
-## Syntax / operators
-
-We can go even further by enhancing `String` through implicit conversion:
-
-```scala
-case class CellDecoderOps(cell: String) {
-  def decodeCell[A: CellDecoder]: A = CellDecoder[A].decode(cell)
-}
-
-implicit val toCellDecoderOps: String => CellDecoderOps =
-  CellDecoderOps.apply
-```
-
---
-
-This lets us write:
-
-```scala
-"123".decodeCell[Int]
-// res25: Int = 123
-```
-
----
-
-## Syntax / operators (improved)
-
-_Implicit classes_ are syntactic sugar for this:
-
-```scala
-implicit class CellDecoderOps(val cell: String) {
-  def decodeCell[A: CellDecoder]: A = CellDecoder[A].decode(cell)
-}
-```
-
---
-
-⚠️️ Operators have a cost - boxing and unboxing of values. They can be offset by:
-- making the implicit class a value class (`extends AnyVal`).
-- Using [Erik Osheim](https://twitter.com/d6/)'s [machinist](https://github.com/typelevel/machinist).
-
---
-
-⚠️️ Implicit classes can be tricky - in particular, they suffer from surprising name conflicts.
-
-???
-A safer, boilerplate-heavy approach to implicit classes is the `ToXxxOps` pattern.
-
----
-
-class: center, middle
-
-# Wrapping things up
-
----
-
-## Conclusions
+## If you only remember 1 slide...
 
 Type classes:
 * are great at adding new behaviours to existing types
-
-```scala
-implicit val uuidDecoder = cellDecoder(java.util.UUID.fromString)
-```
-
---
-
 * compose implicitly, without having to write any type specific code
-
-```scala
-implicitly[RowDecoder[List[Either[Int, Option[Either[Boolean, java.util.UUID]]]]]]
-// res26: RowDecoder[List[Either[Int,Option[Either[Boolean,java.util.UUID]]]]] = $anon$1@58594987
-```
 
 ---
 class: center, middle
