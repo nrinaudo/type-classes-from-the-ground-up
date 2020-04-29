@@ -1229,6 +1229,411 @@ We have made `decodeCsv` polymorphic by using:
 
 class: center, middle
 
+# Could we do this in OOP?
+
+---
+
+## Subclassing
+
+```java
+interface DecodableFromCell<A> {
+    A decodeCell(String cell);
+}
+```
+
+---
+
+## Subclassing
+
+```java
+interface `DecodableFromCell<A>` {
+    A decodeCell(String cell);
+}
+```
+
+---
+
+## Subclassing
+
+```java
+interface DecodableFromCell<A> {
+    A `decodeCell`(String cell);
+}
+```
+
+---
+
+## Subclassing
+
+```java
+interface DecodableFromCell<A> {
+    A decodeCell(`String cell`);
+}
+```
+
+---
+
+## Subclassing
+
+```java
+interface DecodableFromCell<A> {
+    `A` decodeCell(String cell);
+}
+```
+
+---
+
+## Subclassing
+
+```java
+public <A extends DecodableFromCell<A>>
+    List<List<A>> decodeCsv(String csv) {
+    Function<String, A> decode = ???;
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Subclassing
+
+```java
+public <A extends DecodableFromCell<A>>
+    List<List<A>> `decodeCsv`(String csv) {
+    Function<String, A> decode = ???;
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Subclassing
+
+```java
+public <A extends DecodableFromCell<A>>
+    List<List<A>> decodeCsv(`String csv`) {
+    Function<String, A> decode = ???;
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Subclassing
+
+```java
+public <A extends DecodableFromCell<A>>
+    List<List<A>> decodeCsv(String csv) {
+    Function<String, A> decode = ???;
+
+    return `parseCsv(csv)`
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Subclassing
+
+```java
+public <A extends DecodableFromCell<A>>
+    List<List<A>> decodeCsv(String csv) {
+    Function<String, A> decode = ???;
+
+    return parseCsv(csv)
+        .stream()
+        .`map`(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Subclassing
+
+```java
+public <A extends DecodableFromCell<A>>
+    List<List<A>> decodeCsv(String csv) {
+    Function<String, A> decode = ???;
+
+    return parseCsv(csv)
+        .stream()
+        .map(`row` -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Subclassing
+
+```java
+public <A extends DecodableFromCell<A>>
+    List<List<A>> decodeCsv(String csv) {
+    Function<String, A> decode = ???;
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .`map`(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Subclassing
+
+```java
+public <A extends DecodableFromCell<A>>
+    List<List<A>> decodeCsv(String csv) {
+    Function<String, A> decode = ???;
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(`decode`)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Subclassing
+
+```java
+public <A extends DecodableFromCell<A>>
+    List<List<A>> decodeCsv(String csv) {
+    `Function<String, A> decode = ???`;
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Explicit dictionary
+
+```java
+interface CellDecoder<A> {
+    A decode(String cell);
+}
+```
+
+---
+
+## Explicit dictionary
+
+```java
+interface `CellDecoder<A>` {
+    A decode(String cell);
+}
+```
+
+---
+
+## Explicit dictionary
+
+```java
+interface CellDecoder<A> {
+    `A decode(String cell);`
+}
+```
+
+---
+
+## Explicit dictionary
+
+```java
+interface CellDecoder<A> {
+    A decode(`String cell`);
+}
+```
+
+---
+
+## Explicit dictionary
+
+```java
+interface CellDecoder<A> {
+    `A` decode(String cell);
+}
+```
+
+---
+
+## Explicit dictionary
+
+```java
+public <A> List<List<A>>
+    decodeCsv(String csv, CellDecoder<A> decoder) {
+    Function<String, A> decode = cell -> decoder.decode(cell);
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+}
+```
+
+---
+
+## Explicit dictionary
+
+```java
+public <A> List<List<A>>
+    decodeCsv(String csv, CellDecoder<A> decoder) {
+    `Function<String, A> decode = cell -> decoder.decode(cell);`
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+}
+```
+
+---
+
+## Explicit dictionary
+
+```java
+public <A> List<List<A>>
+    decodeCsv(String csv, CellDecoder<A> decoder) {
+    Function<String, A> decode = `cell -> decoder.decode(cell)`;
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+}
+```
+
+---
+
+## Explicit dictionary
+
+```java
+CellDecoder<Integer> intCellDecoder =
+    cell -> Integer.parseInt(cell);
+```
+
+---
+
+## Explicit dictionary
+
+```java
+CellDecoder<Integer> intCellDecoder =
+    `cell -> Integer.parseInt(cell)`;
+```
+
+---
+
+## Explicit dictionary
+
+```java
+&#x200B;`CellDecoder<Integer> intCellDecoder` =
+    cell -> Integer.parseInt(cell);
+```
+
+---
+
+## Explicit dictionary
+
+```java
+decodeCsv("1,2,3\n4,5,6", intCellDecoder);
+```
+
+---
+
+## Explicit dictionary
+
+```java
+decodeCsv(`"1,2,3\n4,5,6"`, intCellDecoder);
+```
+
+---
+
+## Explicit dictionary
+
+```java
+decodeCsv("1,2,3\n4,5,6", `intCellDecoder`);
+```
+
+---
+
+## Explicit dictionary
+
+```java
+decodeCsv("1,2,3\n4,5,6", intCellDecoder);
+// [[1, 2, 3], [4, 5, 6]]
+
+```
+
+---
+
+## Key takeaways
+
+--
+* subclassing requires values where type classes don't.
+
+--
+* type classes are "merely" syntactic sugar over explicit dictionaries.
+
+---
+
+class: center, middle
+
 # Implicit type class composition
 
 ---
@@ -1953,8 +2358,8 @@ decodeCsv[(Int, String)](input)`(tupleDecoder[Int, String])`
 
 ```scala
 decodeCsv[(Int, String)](input)(tupleDecoder[Int, String]`(`
-  `???: RowDecoder[Int]`,
-  `???: RowDecoder[Float]`
+  `???: CellDecoder[Int]`,
+  `???: CellDecoder[String]`
 &#x200B;`))`
 ```
 
@@ -1988,81 +2393,6 @@ decodeCsv[(Int, String)](input)(tupleDecoder[Int, String](
 ```scala
 decodeCsv[(Int, String)](input)
 // res23: List[(Int, String)] = List((1997,Ford), (2000,Mercury))
-```
-
----
-
-## Heterogenous types
-
-```scala
-decodeCsv[(Float, String)](input)
-```
-
----
-
-## Heterogenous types
-
-```scala
-decodeCsv[(`Float`, String)](input)
-```
-
----
-
-## Heterogenous types
-
-```scala
-decodeCsv[(Float, String)](input)`(???: RowDecoder[(Float, String)])`
-```
-
----
-
-## Heterogenous types
-
-```scala
-decodeCsv[(Float, String)](input)`(tupleDecoder[Float, String])`
-```
-
----
-
-## Heterogenous types
-
-```scala
-decodeCsv[(Float, String)](input)(tupleDecoder[Float, String]`(`
-  `???: CellDecoder[Float]`,
-  `???: CellDecoder[String]`
-&#x200B;`))`
-```
-
----
-
-## Heterogenous types
-
-```scala
-decodeCsv[(Float, String)](input)(tupleDecoder[Float, String](
-  `floatCellDecoder`,
-  `stringCellDecoder`
-))
-```
-
----
-
-## Heterogenous types
-
-```scala
-decodeCsv[(Float, String)](input)(tupleDecoder[Float, String](
-  floatCellDecoder,
-  stringCellDecoder
-))
-// res25: List[(Float, String)] = List((1997.0,Ford), (2000.0,Mercury))
-```
-
----
-
-## Heterogenous types
-
-```scala
-decodeCsv[(Float, String)](input)
-// res26: List[(Float, String)] = List((1997.0,Ford), (2000.0,Mercury))
 ```
 
 ---
@@ -2223,9 +2553,9 @@ decodeCsv[(Option[Int], String)](input)`(`
 ## Optional cells
 
 ```scala
-decodeCsv[(Option[Int], String)](input)`(`
+decodeCsv[(Option[Int], String)](input)(
   `tupleDecoder[Option[Int], String]`
-&#x200B;`)`
+)
 ```
 
 ---
@@ -2286,7 +2616,7 @@ decodeCsv[(Option[Int], String)](input)(
     optionCellDecoder[Int](intCellDecoder),
     stringCellDecoder
 ))
-// res28: List[(Option[Int], String)] = List((Some(1997),Ford), (None,Mercury))
+// res25: List[(Option[Int], String)] = List((Some(1997),Ford), (None,Mercury))
 ```
 
 ---
@@ -2295,7 +2625,7 @@ decodeCsv[(Option[Int], String)](input)(
 
 ```scala
 decodeCsv[(Option[Int], String)](input)
-// res29: List[(Option[Int], String)] = List((Some(1997),Ford), (None,Mercury))
+// res26: List[(Option[Int], String)] = List((Some(1997),Ford), (None,Mercury))
 ```
 
 ---
@@ -2473,9 +2803,21 @@ decodeCsv[(Either[Int, Boolean], String)](input)(
 ```scala
 decodeCsv[(Either[Int, Boolean], String)](input)(
   tupleDecoder[Either[Int, Boolean], String]`(`
+    `???: CellDecoder[Either[Int, Boolean]]`,
+    `???: CellDecoder[String]`
+&#x200B;`)`)
+```
+
+---
+
+## Cells with multiple types
+
+```scala
+decodeCsv[(Either[Int, Boolean], String)](input)(
+  tupleDecoder[Either[Int, Boolean], String](
     `eitherCellDecoder[Int, String]`,
     `stringCellDecoder`
-&#x200B;`)`)
+))
 ```
 
 ---
@@ -2521,7 +2863,7 @@ decodeCsv[(Either[Int, Boolean], String)](input)(
     ),
     stringCellDecoder
 ))
-// res31: List[(Either[Int,Boolean], String)] = List((Left(1997),Ford), (Right(true),Mercury))
+// res28: List[(Either[Int,Boolean], String)] = List((Left(1997),Ford), (Right(true),Mercury))
 ```
 
 ---
@@ -2530,7 +2872,7 @@ decodeCsv[(Either[Int, Boolean], String)](input)(
 
 ```scala
 decodeCsv[(Either[Int, Boolean], String)](input)
-// res32: List[(Either[Int,Boolean], String)] = List((Left(1997),Ford), (Right(true),Mercury))
+// res29: List[(Either[Int,Boolean], String)] = List((Left(1997),Ford), (Right(true),Mercury))
 ```
 
 ---
@@ -2548,15 +2890,10 @@ decodeCsv[(Either[Int, Boolean], String)](input)
 ## Collections of values
 
 ```scala
-import scala.collection.generic.CanBuildFrom
-
-implicit def cbfDecoder[A, F[_]](
-  implicit da: CellDecoder[A],
-           cbf: CanBuildFrom[Nothing, A, F[A]]
-) =  RowDecoder.from[F[A]] { row =>
-  row.foldLeft(cbf.apply()) { (out, s) =>
-    out += da.decode(s)
-  }.result()
+implicit def listDecoder[A](
+  implicit da: CellDecoder[A]
+) =  RowDecoder.from[List[A]] { row =>
+  row.map(da.decode)
 }
 ```
 
@@ -2565,15 +2902,10 @@ implicit def cbfDecoder[A, F[_]](
 ## Collections of values
 
 ```scala
-import scala.collection.generic.CanBuildFrom
-
-implicit def cbfDecoder[`A`, F[_]](
-  `implicit` da: `CellDecoder[A]`,
-           cbf: CanBuildFrom[Nothing, A, F[A]]
-) =  RowDecoder.from[F[A]] { row =>
-  row.foldLeft(cbf.apply()) { (out, s) =>
-    out += da.decode(s)
-  }.result()
+implicit def listDecoder[`A`](
+  `implicit` da: `CellDecoder[A]`
+) =  RowDecoder.from[List[A]] { row =>
+  row.map(da.decode)
 }
 ```
 
@@ -2582,15 +2914,10 @@ implicit def cbfDecoder[`A`, F[_]](
 ## Collections of values
 
 ```scala
-import scala.collection.generic.CanBuildFrom
-
-implicit def cbfDecoder[A, `F[_]`](
-  `implicit` da: CellDecoder[A],
-           cbf: `CanBuildFrom`[Nothing, A, F[A]]
-) =  RowDecoder.from[F[A]] { row =>
-  row.foldLeft(cbf.apply()) { (out, s) =>
-    out += da.decode(s)
-  }.result()
+implicit def listDecoder[A](
+  implicit da: CellDecoder[A]
+) =  `RowDecoder`.from[`List[A]`] { row =>
+  row.map(da.decode)
 }
 ```
 
@@ -2599,15 +2926,10 @@ implicit def cbfDecoder[A, `F[_]`](
 ## Collections of values
 
 ```scala
-import scala.collection.generic.CanBuildFrom
-
-implicit def cbfDecoder[A, F[_]](
-  implicit da: CellDecoder[A],
-           cbf: CanBuildFrom[Nothing, A, F[A]]
-) =  `RowDecoder`.from[`F[A]`] { row =>
-  row.foldLeft(cbf.apply()) { (out, s) =>
-    out += da.decode(s)
-  }.result()
+implicit def listDecoder[A](
+  implicit da: CellDecoder[A]
+) =  RowDecoder.from[List[A]] { row =>
+  `row.map(da.decode)`
 }
 ```
 
@@ -2650,7 +2972,7 @@ decodeCsv[List[Int]](input)`(???: RowDecoder[List[Int]])`
 ## Collections of values
 
 ```scala
-decodeCsv[List[Int]](input)(`cbfDecoder[Int, List]`)
+decodeCsv[List[Int]](input)(`listDecoder[Int]`)
 ```
 
 ---
@@ -2658,9 +2980,8 @@ decodeCsv[List[Int]](input)(`cbfDecoder[Int, List]`)
 ## Collections of values
 
 ```scala
-decodeCsv[List[Int]](input)(cbfDecoder[Int, List]`(`
-  `???: CellDecoder[Int]`,
-  `???: CanBuildFrom[Nothing, Int, List[Int]]`
+decodeCsv[List[Int]](input)(listDecoder[Int]`(`
+  `???: CellDecoder[Int]`
 &#x200B;`)`)
 ```
 
@@ -2669,23 +2990,20 @@ decodeCsv[List[Int]](input)(cbfDecoder[Int, List]`(`
 ## Collections of values
 
 ```scala
-decodeCsv[List[Int]](input)(cbfDecoder(
-  `intCellDecoder`,
-  `implicitly[CanBuildFrom[Nothing, Int, List[Int]]]`
+decodeCsv[List[Int]](input)(listDecoder[Int](
+  `intCellDecoder`
 ))
 ```
-
 
 ---
 
 ## Collections of values
 
 ```scala
-decodeCsv[List[Int]](input)(cbfDecoder(
-  intCellDecoder,
-  implicitly[CanBuildFrom[Nothing, Int, List[Int]]]
+decodeCsv[List[Int]](input)(listDecoder[Int](
+  intCellDecoder
 ))
-// res34: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+// res31: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 ---
@@ -2694,7 +3012,7 @@ decodeCsv[List[Int]](input)(cbfDecoder(
 
 ```scala
 decodeCsv[List[Int]](input)
-// res35: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+// res32: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
 
 ---
