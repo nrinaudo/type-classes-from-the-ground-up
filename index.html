@@ -94,7 +94,10 @@ type Csv  = List[Row]
 ```
 
 ```scala
-def parseCsv(data: String) = ???
+def parseCsv(data: String): Csv =
+  data.
+    split("\n").toList.
+    map(_.split(",").toList)
 ```
 
 ---
@@ -108,53 +111,7 @@ def parseCsv(data: String) = ???
 ```
 
 ```scala
-def parseCsv(`data: String`) = ???
-```
-
----
-
-## Parsing CSV
-
-```csv
-&#x200B;`1,2,3`
-&#x200B;`4,5,6`
-&#x200B;`7,8,9`
-```
-
-```scala
-def parseCsv(data: String) =
-  data.
-    split("\n").toList
-```
-
----
-
-## Parsing CSV
-
-```csv
-&#x200B;`1,2,3`
-&#x200B;`4,5,6`
-&#x200B;`7,8,9`
-```
-
-```scala
-def parseCsv(data: String) =
-  data.
-    `split("\n")`.toList
-```
-
----
-
-## Parsing CSV
-
-```csv
-&#x200B;`1`,`2`,`3`
-&#x200B;`4`,`5`,`6`
-&#x200B;`7`,`8`,`9`
-```
-
-```scala
-def parseCsv(data: String): Csv =
+def parseCsv(`data: String`): Csv =
   data.
     split("\n").toList.
     map(_.split(",").toList)
@@ -165,6 +122,40 @@ def parseCsv(data: String): Csv =
 ## Parsing CSV
 
 ```csv
+&#x200B;`1,2,3`
+&#x200B;`4,5,6`
+&#x200B;`7,8,9`
+```
+
+```scala
+def parseCsv(data: String): Csv =
+  data.
+    `split("\n")`.toList.
+    map(_.split(",").toList)
+```
+
+---
+
+## Parsing CSV
+
+```csv
+&#x200B;`1,2,3`
+&#x200B;`4,5,6`
+&#x200B;`7,8,9`
+```
+
+```scala
+def parseCsv(data: String): Csv =
+  data.
+    split("\n").toList.
+    `map`(_.split(",").toList)
+```
+
+---
+
+## Parsing CSV
+
+```csv
 &#x200B;`1`,`2`,`3`
 &#x200B;`4`,`5`,`6`
 &#x200B;`7`,`8`,`9`
@@ -174,7 +165,7 @@ def parseCsv(data: String): Csv =
 def parseCsv(data: String): Csv =
   data.
     split("\n").toList.
-    map(_.`split(",")`.toList)
+    map(`_.split(",")`.toList)
 ```
 
 ---
@@ -749,7 +740,7 @@ decodeCsv[Int](input)
 
 ## The dangers of implicits
 
-> When the compiler finds a type `S` where it expects a type `A`, but there exists an implicit `S => A`
+> When the compiler finds a type `A` where it expects a type `B`, but there exists an implicit `A => B`
 > in scope, it will be applied silently.
 
 ```scala
@@ -1344,6 +1335,44 @@ public <A extends DecodableFromCell<A>>
 
 ```java
 public <A extends DecodableFromCell<A>>
+    `List<List<A>>` decodeCsv(String csv) {
+    Function<String, A> decode = ???;
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Subclassing
+
+```java
+public <`A extends DecodableFromCell<A>`>
+    List<List<A>> decodeCsv(String csv) {
+    Function<String, A> decode = ???;
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+    }
+```
+
+---
+
+## Subclassing
+
+```java
+public <A extends DecodableFromCell<A>>
     List<List<A>> decodeCsv(String csv) {
     Function<String, A> decode = ???;
 
@@ -1527,6 +1556,25 @@ public <A> List<List<A>>
 
 ```java
 public <A> List<List<A>>
+    decodeCsv(String csv, `CellDecoder<A> decoder`) {
+    Function<String, A> decode = cell -> decoder.decode(cell);
+
+    return parseCsv(csv)
+        .stream()
+        .map(row -> row
+             .stream()
+             .map(decode)
+             .collect(Collectors.toList()))
+        .collect(Collectors.toList());
+}
+```
+
+---
+
+## Explicit dictionary
+
+```java
+public <A> List<List<A>>
     decodeCsv(String csv, CellDecoder<A> decoder) {
     `Function<String, A> decode = cell -> decoder.decode(cell);`
 
@@ -1573,8 +1621,8 @@ CellDecoder<Integer> intCellDecoder =
 ## Explicit dictionary
 
 ```java
-CellDecoder<Integer> intCellDecoder =
-    `cell -> Integer.parseInt(cell)`;
+&#x200B;`CellDecoder<Integer>` intCellDecoder =
+    cell -> Integer.parseInt(cell);
 ```
 
 ---
@@ -1582,8 +1630,8 @@ CellDecoder<Integer> intCellDecoder =
 ## Explicit dictionary
 
 ```java
-&#x200B;`CellDecoder<Integer> intCellDecoder` =
-    cell -> Integer.parseInt(cell);
+CellDecoder<Integer> intCellDecoder =
+    `cell -> Integer.parseInt(cell)`;
 ```
 
 ---
@@ -2782,7 +2830,7 @@ decodeCsv[`(Either[Int, Boolean], String)`](input)
 
 ```scala
 decodeCsv[(Either[Int, Boolean], String)](input)`(`
-  `???: RowDecoder[(Either[Int, Boolean])]`
+  `???: RowDecoder[(Either[Int, Boolean], String)]`
 &#x200B;`)`
 ```
 
@@ -3021,7 +3069,338 @@ decodeCsv[List[Int]](input)
 
 --
 
-Type classes compose implicitly to create complex instances.
+* Type classes are strictly syntactic sugar over explicit dictionaries.
+--
+
+* But what great syntactic sugar they are!
+
+---
+
+class: center, middle
+
+# Making the syntax sweeter
+
+---
+
+## Context bounds
+
+```scala
+def decodeCsv[A](input: String)
+                (implicit da: RowDecoder[A]): List[A] =
+  parseCsv(input).
+    map(da.decode)
+```
+
+---
+
+## Context bounds
+
+```scala
+def decodeCsv[A](input: String)
+                (`implicit da: RowDecoder[A]`): List[A] =
+  parseCsv(input).
+    map(da.decode)
+```
+
+---
+
+## Context bounds
+
+```scala
+def decodeCsv[A: RowDecoder](input: String): List[A] =
+  parseCsv(input).
+    map(implicitly[RowDecoder[A]].decode)
+```
+
+---
+
+## Context bounds
+
+```scala
+def decodeCsv[`A: RowDecoder`](input: String): List[A] =
+  parseCsv(input).
+    map(implicitly[RowDecoder[A]].decode)
+```
+
+---
+
+## Context bounds
+
+```scala
+def decodeCsv[A: RowDecoder](input: String): List[A] =
+  parseCsv(input).
+    map(`implicitly[RowDecoder[A]]`.decode)
+```
+
+
+---
+
+## Instance summoning
+
+```scala
+object RowDecoder {
+  def from[A](
+    f: Row => A
+  ) = new RowDecoder[A] {
+    override def decode(row: Row) = f(row)
+  }
+
+  def apply[A](implicit da: RowDecoder[A]): RowDecoder[A] = da
+}
+```
+
+---
+
+## Instance summoning
+
+```scala
+object RowDecoder {
+  def from[A](
+    f: Row => A
+  ) = new RowDecoder[A] {
+    override def decode(row: Row) = f(row)
+  }
+
+  `def apply[A](implicit da: RowDecoder[A]): RowDecoder[A] = da`
+}
+```
+---
+
+## Instance summoning
+
+```scala
+object RowDecoder {
+  def from[A](
+    f: Row => A
+  ) = new RowDecoder[A] {
+    override def decode(row: Row) = f(row)
+  }
+
+  def apply[`A`](implicit da: RowDecoder[A]): RowDecoder[A] = da
+}
+```
+
+---
+
+## Instance summoning
+
+```scala
+object RowDecoder {
+  def from[A](
+    f: Row => A
+  ) = new RowDecoder[A] {
+    override def decode(row: Row) = f(row)
+  }
+
+  def apply[A](implicit `da: RowDecoder[A]`): RowDecoder[A] = da
+}
+```
+
+---
+
+## Instance summoning
+
+```scala
+object RowDecoder {
+  def from[A](
+    f: Row => A
+  ) = new RowDecoder[A] {
+    override def decode(row: Row) = f(row)
+  }
+
+  def apply[A](implicit da: RowDecoder[A]): RowDecoder[A] = `da`
+}
+```
+
+
+
+---
+
+## Instance summoning
+
+```scala
+def decodeCsv[A: RowDecoder](input: String): List[A] =
+  parseCsv(input).
+    map(RowDecoder[A].decode)
+```
+
+---
+
+## Instance summoning
+
+```scala
+def decodeCsv[A: RowDecoder](input: String): List[A] =
+  parseCsv(input).
+    map(`RowDecoder[A]`.decode)
+```
+
+---
+
+## Extension methods
+
+```scala
+implicit class RowDecoderOps(row: Row) {
+  def decodeRow[A: RowDecoder]: A =
+    RowDecoder[A].decode(row)
+}
+```
+
+---
+
+## Extension methods
+
+```scala
+&#x200B;`implicit` class RowDecoderOps(row: Row) {
+  def decodeRow[A: RowDecoder]: A =
+    RowDecoder[A].decode(row)
+}
+```
+
+---
+
+## Extension methods
+
+```scala
+implicit class RowDecoderOps(`row: Row`) {
+  def decodeRow[A: RowDecoder]: A =
+    RowDecoder[A].decode(row)
+}
+```
+
+---
+
+## Extension methods
+
+```scala
+implicit class RowDecoderOps(row: Row) {
+  def decodeRow[`A: RowDecoder`]: A =
+    RowDecoder[A].decode(row)
+}
+```
+
+---
+
+## Extension methods
+
+```scala
+implicit class RowDecoderOps(row: Row) {
+  def `decodeRow`[A: RowDecoder]: A =
+    RowDecoder[A].decode(row)
+}
+```
+
+
+---
+
+## Extension methods
+
+```scala
+implicit class RowDecoderOps(row: Row) {
+  def decodeRow[A: RowDecoder]: `A` =
+    RowDecoder[A].decode(row)
+}
+```
+
+---
+
+## Extension methods
+
+```scala
+implicit class RowDecoderOps(row: Row) {
+  def decodeRow[A: RowDecoder]: A =
+    `RowDecoder[A].decode(row)`
+}
+```
+
+---
+
+## Extension methods
+
+```scala
+def decodeCsv[A: RowDecoder](input: String): List[A] =
+  parseCsv(input).
+    map(_.decodeRow)
+```
+
+---
+
+## Extension methods
+
+```scala
+def decodeCsv[A: RowDecoder](input: String): List[A] =
+  parseCsv(input).
+    map(`_.decodeRow`)
+```
+
+---
+
+## Scala 3 extension methods
+
+```scala
+trait RowDecoder[A]:
+  def decode(row: Row): A
+  def (row: Row) decodeRow: A = decode(row)
+```
+
+---
+
+## Scala 3 extension methods
+
+```scala
+trait RowDecoder[A]:
+  def decode(row: Row): A
+  `def (row: Row) decodeRow: A = decode(row)`
+```
+
+---
+
+## Scala 3 extension methods
+
+```scala
+trait RowDecoder[A]:
+  def decode(row: Row): A
+  def (`row: Row`) decodeRow: A = decode(row)
+```
+
+---
+
+## Scala 3 extension methods
+
+```scala
+trait RowDecoder[A]:
+  def decode(row: Row): A
+  def (row: Row) `decodeRow`: A = decode(row)
+```
+
+---
+
+## Scala 3 extension methods
+
+```scala
+trait RowDecoder[A]:
+  def decode(row: Row): A
+  def (row: Row) decodeRow: `A` = decode(row)
+```
+
+---
+
+## Scala 3 extension methods
+
+```scala
+trait RowDecoder[A]:
+  def decode(row: Row): A
+  def (row: Row) decodeRow: A = `decode(row)`
+```
+
+---
+
+## Key takeaways
+
+--
+* Type classes have a fair amount of dedicated syntax.
+
+--
+* They're about to get more.
 
 ---
 
@@ -3033,9 +3412,17 @@ class: center, middle
 
 ## If you only remember 1 slide...
 
-Type classes:
-* are great at adding new behaviours to existing types
-* compose implicitly, without having to write any type specific code
+--
+Type classes are:
+
+--
+* a clever use of parametric polymorphism and implicit resolution.
+
+--
+* convenient syntactic sugar.
+
+--
+* great at getting the compiler to write code so that you don't have to.
 
 ---
 class: center, middle
