@@ -3297,7 +3297,6 @@ decodeCsv[List[Either[Either[Int, Boolean], Option[String]]]](
 )
 ```
 
-
 ---
 
 ## Going nuts
@@ -3329,8 +3328,6 @@ decodeCsv[List[Either[Either[Int, Boolean], Option[String]]]](
 )
 // res34: List[List[Either[Either[Int,Boolean],Option[String]]]] = List(List(Left(Left(1997)), Right(Some(Ford))), List(Left(Right(true)), Right(Some(Mercury))), List(Left(Left(2007)), Right(None)))
 ```
-
-
 
 ---
 
@@ -3400,7 +3397,6 @@ def decodeCsv[A: RowDecoder](input: String): List[A] =
   parseCsv(input).
     map(`implicitly[RowDecoder[A]]`.decode)
 ```
-
 
 ---
 
@@ -3481,8 +3477,6 @@ object RowDecoder {
 }
 ```
 
-
-
 ---
 
 ## Instance summoning
@@ -3557,7 +3551,6 @@ implicit class RowDecoderOps(row: Row) {
     RowDecoder[A].decode(row)
 }
 ```
-
 
 ---
 
@@ -3694,6 +3687,7 @@ Type classes are:
 * great at getting the compiler to write code so that you don't have to.
 
 ---
+
 class: center, middle
 
 # Questions?
@@ -3702,6 +3696,288 @@ Nicolas Rinaudo • [@NicolasRinaudo] • [Besedo]
 
 [@NicolasRinaudo]:https://twitter.com/NicolasRinaudo
 [Besedo]:https://twitter.com/besedo_official
+
+---
+
+class: center, middle
+
+# Bonus material: but Haskell though...
+
+---
+
+## Global uniqueness
+
+```haskell
+module Lib where
+
+data Boolean = T | F deriving (Eq, Show)
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Lib where
+
+data `Boolean = T | F` deriving (Eq, Show)
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Impl1 where
+import Data.Set
+import Lib
+
+instance Ord Boolean where
+  compare T T = EQ
+  compare T F = LT
+  compare F T = GT
+  compare F F = EQ
+
+ins :: Boolean -> Set Boolean -> Set Boolean
+ins = insert
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+*module Impl1 where
+import Data.Set
+import Lib
+
+instance Ord Boolean where
+  compare T T = EQ
+  compare T F = LT
+  compare F T = GT
+  compare F F = EQ
+
+ins :: Boolean -> Set Boolean -> Set Boolean
+ins = insert
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Impl1 where
+import Data.Set
+import Lib
+
+*instance Ord Boolean where
+* compare T T = EQ
+* compare T F = LT
+* compare F T = GT
+* compare F F = EQ
+
+ins :: Boolean -> Set Boolean -> Set Boolean
+ins = insert
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Impl1 where
+import Data.Set
+import Lib
+
+instance Ord Boolean where
+  compare T T = EQ
+  compare T F = LT
+  compare F T = GT
+  compare F F = EQ
+
+*ins :: Boolean -> Set Boolean -> Set Boolean
+*ins = insert
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Impl2 where
+import Data.Set
+import Lib
+
+instance Ord Boolean where
+  compare T T = EQ
+  compare T F = GT
+  compare F T = LT
+  compare F F = EQ
+
+ins' :: Boolean -> Set Boolean -> Set Boolean
+ins' = insert
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+*module Impl2 where
+import Data.Set
+import Lib
+
+instance Ord Boolean where
+  compare T T = EQ
+  compare T F = GT
+  compare F T = LT
+  compare F F = EQ
+
+ins' :: Boolean -> Set Boolean -> Set Boolean
+ins' = insert
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Impl2 where
+import Data.Set
+import Lib
+
+instance Ord Boolean where
+  compare T T = EQ
+* compare T F = GT
+* compare F T = LT
+  compare F F = EQ
+
+ins' :: Boolean -> Set Boolean -> Set Boolean
+ins' = insert
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Impl2 where
+import Data.Set
+import Lib
+
+instance Ord Boolean where
+  compare T T = EQ
+  compare T F = GT
+  compare F T = LT
+  compare F F = EQ
+
+*ins' :: Boolean -> Set Boolean -> Set Boolean
+*ins' = insert
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Main where
+
+import Data.Set
+import Lib
+import Impl1
+import Impl2
+
+test :: Set Boolean
+test = ins' T $ ins T $ ins F $ empty
+
+main :: IO ()
+main = print test
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Main where
+
+import Data.Set
+import Lib
+import Impl1
+import Impl2
+
+*test :: Set Boolean
+*test = ins' T $ ins T $ ins F $ empty
+
+main :: IO ()
+main = print test
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Main where
+
+import Data.Set
+import Lib
+import Impl1
+import Impl2
+
+test :: Set Boolean
+test = `ins' T` $ ins T $ ins F $ empty
+
+main :: IO ()
+main = print test
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Main where
+
+import Data.Set
+import Lib
+import Impl1
+import Impl2
+
+test :: Set Boolean
+test = ins' T $ `ins T` $ ins F $ empty
+
+main :: IO ()
+main = print test
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Main where
+
+import Data.Set
+import Lib
+import Impl1
+import Impl2
+
+test :: Set Boolean
+test = ins' T $ ins T $ ins F $ empty
+
+main :: IO ()
+*main = print test
+```
+
+---
+
+## ~~Global uniqueness~~
+
+```haskell
+-- wtf Haskell I trusted you
+fromList [T,F,T]
+```
 
     </textarea>
     <script src="js/remark.js" type="text/javascript">
