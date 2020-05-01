@@ -122,6 +122,23 @@ def parseCsv(`data: String`): Csv =
 ## Parsing CSV
 
 ```csv
+*1,2,3
+*4,5,6
+*7,8,9
+```
+
+```scala
+def parseCsv(data: String): `Csv` =
+  data.
+    split("\n").toList.
+    map(_.split(",").toList)
+```
+
+---
+
+## Parsing CSV
+
+```csv
 &#x200B;`1,2,3`
 &#x200B;`4,5,6`
 &#x200B;`7,8,9`
@@ -166,23 +183,6 @@ def parseCsv(data: String): Csv =
   data.
     split("\n").toList.
     map(`_.split(",")`.toList)
-```
-
----
-
-## Parsing CSV
-
-```csv
-&#x200B;`1`,`2`,`3`
-&#x200B;`4`,`5`,`6`
-&#x200B;`7`,`8`,`9`
-```
-
-```scala
-def parseCsv(data: String): `Csv` =
-  data.
-    split("\n").toList.
-    map(_.split(",").toList)
 ```
 
 ---
@@ -2408,7 +2408,18 @@ decodeCsv[(Int, String)](input)`(tupleDecoder[Int, String])`
 decodeCsv[(Int, String)](input)(tupleDecoder[Int, String]`(`
   `???: CellDecoder[Int]`,
   `???: CellDecoder[String]`
-&#x200B;`))`
+&#x200B;`)`)
+```
+
+---
+
+## Heterogenous types
+
+```scala
+decodeCsv[(Int, String)](input)(tupleDecoder[Int, String](
+  `???: CellDecoder[Int]`,
+  ???: CellDecoder[String]
+))
 ```
 
 ---
@@ -2418,6 +2429,27 @@ decodeCsv[(Int, String)](input)(tupleDecoder[Int, String]`(`
 ```scala
 decodeCsv[(Int, String)](input)(tupleDecoder[Int, String](
   `intCellDecoder`,
+  ???: CellDecoder[String]
+))
+```
+---
+
+## Heterogenous types
+
+```scala
+decodeCsv[(Int, String)](input)(tupleDecoder[Int, String](
+  intCellDecoder,
+  `???: CellDecoder[String]`
+))
+```
+
+---
+
+## Heterogenous types
+
+```scala
+decodeCsv[(Int, String)](input)(tupleDecoder[Int, String](
+  intCellDecoder,
   `stringCellDecoder`
 ))
 ```
@@ -2625,8 +2657,20 @@ decodeCsv[(Option[Int], String)](input)(
 ```scala
 decodeCsv[(Option[Int], String)](input)(
   tupleDecoder[Option[Int], String](
+    `???: CellDecoder[Option[Int]]`,
+    ???: CellDecoder[String]
+))
+```
+
+---
+
+## Optional cells
+
+```scala
+decodeCsv[(Option[Int], String)](input)(
+  tupleDecoder[Option[Int], String](
     `optionCellDecoder[Int]`,
-    `stringCellDecoder`
+    ???: CellDecoder[String]
 ))
 ```
 
@@ -2638,7 +2682,7 @@ decodeCsv[(Option[Int], String)](input)(
 decodeCsv[(Option[Int], String)](input)(
   tupleDecoder[Option[Int], String](
     optionCellDecoder[Int]`(???: CellDecoder[Int])`,
-    stringCellDecoder
+    ???: CellDecoder[String]
 ))
 ```
 
@@ -2649,8 +2693,32 @@ decodeCsv[(Option[Int], String)](input)(
 ```scala
 decodeCsv[(Option[Int], String)](input)(
   tupleDecoder[Option[Int], String](
-    optionCellDecoder[Int]`(intCellDecoder)`,
-    stringCellDecoder
+    optionCellDecoder[Int](`intCellDecoder`),
+    ???: CellDecoder[String]
+))
+```
+
+---
+
+## Optional cells
+
+```scala
+decodeCsv[(Option[Int], String)](input)(
+  tupleDecoder[Option[Int], String](
+    optionCellDecoder[Int](intCellDecoder),
+    `???: CellDecoder[String]`
+))
+```
+
+---
+
+## Optional cells
+
+```scala
+decodeCsv[(Option[Int], String)](input)(
+  tupleDecoder[Option[Int], String](
+    optionCellDecoder[Int](intCellDecoder),
+    `stringCellDecoder`
 ))
 ```
 
@@ -2863,8 +2931,8 @@ decodeCsv[(Either[Int, Boolean], String)](input)(
 ```scala
 decodeCsv[(Either[Int, Boolean], String)](input)(
   tupleDecoder[Either[Int, Boolean], String](
-    `eitherCellDecoder[Int, String]`,
-    `stringCellDecoder`
+    `???: CellDecoder[Either[Int, Boolean]]`,
+    ???: CellDecoder[String]
 ))
 ```
 
@@ -2875,11 +2943,38 @@ decodeCsv[(Either[Int, Boolean], String)](input)(
 ```scala
 decodeCsv[(Either[Int, Boolean], String)](input)(
   tupleDecoder[Either[Int, Boolean], String](
-    eitherCellDecoder[Int, String]`(`
+    `eitherCellDecoder[Int, Boolean]`,
+    ???: CellDecoder[String]
+))
+```
+
+---
+
+## Cells with multiple types
+
+```scala
+decodeCsv[(Either[Int, Boolean], String)](input)(
+  tupleDecoder[Either[Int, Boolean], String](
+    eitherCellDecoder[Int, Boolean]`(`
       `???: CellDecoder[Int]`,
       `???: CellDecoder[Boolean]`
     `)`,
-    stringCellDecoder
+    ???: CellDecoder[String]
+))
+```
+
+---
+
+## Cells with multiple types
+
+```scala
+decodeCsv[(Either[Int, Boolean], String)](input)(
+  tupleDecoder[Either[Int, Boolean], String](
+    eitherCellDecoder[Int, Boolean](
+      `???: CellDecoder[Int]`,
+      ???: CellDecoder[Boolean]
+    ),
+    ???: CellDecoder[String]
 ))
 ```
 
@@ -2892,12 +2987,71 @@ decodeCsv[(Either[Int, Boolean], String)](input)(
   tupleDecoder[Either[Int, Boolean], String](
     eitherCellDecoder[Int, Boolean](
       `intCellDecoder`,
-      `booleanCellDecoder`
+      ???: CellDecoder[Boolean]
     ),
-    stringCellDecoder
+    ???: CellDecoder[String]
 ))
 ```
 
+---
+
+## Cells with multiple types
+
+```scala
+decodeCsv[(Either[Int, Boolean], String)](input)(
+  tupleDecoder[Either[Int, Boolean], String](
+    eitherCellDecoder[Int, Boolean](
+      intCellDecoder,
+      `???: CellDecoder[Boolean]`
+    ),
+    ???: CellDecoder[String]
+))
+```
+
+---
+
+## Cells with multiple types
+
+```scala
+decodeCsv[(Either[Int, Boolean], String)](input)(
+  tupleDecoder[Either[Int, Boolean], String](
+    eitherCellDecoder[Int, Boolean](
+      intCellDecoder,
+      `booleanCellDecoder`
+    ),
+    ???: CellDecoder[String]
+))
+```
+
+---
+
+## Cells with multiple types
+
+```scala
+decodeCsv[(Either[Int, Boolean], String)](input)(
+  tupleDecoder[Either[Int, Boolean], String](
+    eitherCellDecoder[Int, Boolean](
+      intCellDecoder,
+      booleanCellDecoder
+    ),
+    `???: CellDecoder[String]`
+))
+```
+
+---
+
+## Cells with multiple types
+
+```scala
+decodeCsv[(Either[Int, Boolean], String)](input)(
+  tupleDecoder[Either[Int, Boolean], String](
+    eitherCellDecoder[Int, Boolean](
+      intCellDecoder,
+      booleanCellDecoder
+    ),
+    `stringCellDecoder`
+))
+```
 ---
 
 ## Cells with multiple types
@@ -3062,6 +3216,121 @@ decodeCsv[List[Int]](input)(listDecoder[Int](
 decodeCsv[List[Int]](input)
 // res32: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
 ```
+
+---
+
+## Going nuts
+
+```csv
+1997,Ford
+true,Mercury
+2007,
+```
+
+---
+
+## Going nuts
+
+```csv
+&#x200B;`1997`,Ford
+&#x200B;`true`,Mercury
+2007,
+```
+
+---
+
+## Going nuts
+
+```csv
+1997,`Ford`
+true,Mercury
+2007,` `
+```
+
+---
+
+## Going nuts
+
+```scala
+val input = """1997,Ford
+              |true,Mercury
+              |2007, """
+```
+
+---
+
+## Going nuts
+
+```scala
+decodeCsv[List[Either[Either[Int, Boolean], Option[String]]]](
+  input
+)
+```
+
+---
+
+## Going nuts
+
+```scala
+decodeCsv[`List[Either[Either[Int, Boolean], Option[String]]]`](
+  input
+)
+```
+
+---
+
+## Going nuts
+
+```scala
+decodeCsv[List[Either[Either[Int, Boolean], Option[String]]]](
+  input
+)(
+* listDecoder[Either[Either[Int, Boolean], Option[String]]](
+*   eitherCellDecoder[Either[Int, Boolean], Option[String]](
+*     eitherCellDecoder[Int, Boolean](
+*       intCellDecoder,
+*       booleanCellDecoder
+*     ),
+*     optionCellDecoder[String](stringCellDecoder)
+*   )
+* )
+)
+```
+
+
+---
+
+## Going nuts
+
+```scala
+decodeCsv[List[Either[Either[Int, Boolean], Option[String]]]](
+  input
+)(
+  listDecoder[Either[Either[Int, Boolean], Option[String]]](
+    eitherCellDecoder[Either[Int, Boolean], Option[String]](
+      eitherCellDecoder[Int, Boolean](
+        intCellDecoder,
+        booleanCellDecoder
+      ),
+      optionCellDecoder[String](stringCellDecoder)
+    )
+  )
+)
+// res33: List[List[Either[Either[Int,Boolean],Option[String]]]] = List(List(Left(Left(1997)), Right(Some(Ford))), List(Left(Right(true)), Right(Some(Mercury))), List(Left(Left(2007)), Right(None)))
+```
+
+---
+
+## Going nuts
+
+```scala
+decodeCsv[List[Either[Either[Int, Boolean], Option[String]]]](
+  input
+)
+// res34: List[List[Either[Either[Int,Boolean],Option[String]]]] = List(List(Left(Left(1997)), Right(Some(Ford))), List(Left(Right(true)), Right(Some(Mercury))), List(Left(Left(2007)), Right(None)))
+```
+
+
 
 ---
 
