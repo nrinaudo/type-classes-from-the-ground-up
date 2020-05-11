@@ -3701,7 +3701,7 @@ Nicolas Rinaudo • [@NicolasRinaudo] • [Besedo]
 
 class: center, middle
 
-# Bonus material: but Haskell though...
+# But Haskell though...
 
 ---
 
@@ -3903,6 +3903,25 @@ module Main where
 
 import Data.Set
 import Lib
+*import Impl1
+*import Impl2
+
+test :: Set Boolean
+test = ins' T $ ins T $ ins F $ empty
+
+main :: IO ()
+main = print test
+```
+
+---
+
+## Global uniqueness
+
+```haskell
+module Main where
+
+import Data.Set
+import Lib
 import Impl1
 import Impl2
 
@@ -3978,6 +3997,26 @@ main :: IO ()
 -- wtf Haskell I trusted you
 fromList [T,F,T]
 ```
+
+---
+
+## ~~Global uniqueness~~
+
+```haskell
+-- wtf Haskell I trusted you
+fromList [`T`,F,`T`]
+```
+
+---
+
+class: center, middle
+
+# Questions?
+
+Nicolas Rinaudo • [@NicolasRinaudo] • [Besedo]
+
+[@NicolasRinaudo]:https://twitter.com/NicolasRinaudo
+[Besedo]:https://twitter.com/besedo_official
 
     </textarea>
     <script src="js/remark.js" type="text/javascript">
