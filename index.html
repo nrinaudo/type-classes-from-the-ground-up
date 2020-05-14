@@ -2477,6 +2477,146 @@ decodeCsv[(Int, String)](input)
 
 ---
 
+## Collections of values
+
+```csv
+1,2,3
+4,5,6
+7,8,9
+```
+
+---
+
+## Collections of values
+
+```scala
+implicit def listDecoder[A](
+  implicit da: CellDecoder[A]
+) =  RowDecoder.from[List[A]] { row =>
+  row.map(da.decode)
+}
+```
+
+---
+
+## Collections of values
+
+```scala
+implicit def listDecoder[`A`](
+  `implicit` da: `CellDecoder[A]`
+) =  RowDecoder.from[List[A]] { row =>
+  row.map(da.decode)
+}
+```
+
+---
+
+## Collections of values
+
+```scala
+implicit def listDecoder[A](
+  implicit da: CellDecoder[A]
+) =  `RowDecoder`.from[`List[A]`] { row =>
+  row.map(da.decode)
+}
+```
+
+---
+
+## Collections of values
+
+```scala
+implicit def listDecoder[A](
+  implicit da: CellDecoder[A]
+) =  RowDecoder.from[List[A]] { row =>
+  `row.map(da.decode)`
+}
+```
+
+---
+
+## Collections of values
+
+```scala
+val input = """1,2,3
+              |4,5,6
+              |7,8,9"""
+```
+
+---
+
+## Collections of values
+
+```scala
+decodeCsv[List[Int]](input)
+```
+
+---
+
+## Collections of values
+
+```scala
+decodeCsv[`List[Int]`](input)
+```
+
+---
+
+## Collections of values
+
+```scala
+decodeCsv[List[Int]](input)`(???: RowDecoder[List[Int]])`
+```
+
+---
+
+## Collections of values
+
+```scala
+decodeCsv[List[Int]](input)(`listDecoder[Int]`)
+```
+
+---
+
+## Collections of values
+
+```scala
+decodeCsv[List[Int]](input)(listDecoder[Int]`(`
+  `???: CellDecoder[Int]`
+&#x200B;`)`)
+```
+
+---
+
+## Collections of values
+
+```scala
+decodeCsv[List[Int]](input)(listDecoder[Int](
+  `intCellDecoder`
+))
+```
+
+---
+
+## Collections of values
+
+```scala
+decodeCsv[List[Int]](input)(listDecoder[Int](
+  intCellDecoder
+))
+// res25: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+```
+
+---
+
+## Collections of values
+
+```scala
+decodeCsv[List[Int]](input)
+// res26: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+```
+
+---
+
 ## Optional cells
 
 ```csv
@@ -2732,7 +2872,7 @@ decodeCsv[(Option[Int], String)](input)(
     optionCellDecoder[Int](intCellDecoder),
     stringCellDecoder
 ))
-// res25: List[(Option[Int], String)] = List((Some(1997),Ford), (None,Mercury))
+// res28: List[(Option[Int], String)] = List((Some(1997),Ford), (None,Mercury))
 ```
 
 ---
@@ -2741,7 +2881,7 @@ decodeCsv[(Option[Int], String)](input)(
 
 ```scala
 decodeCsv[(Option[Int], String)](input)
-// res26: List[(Option[Int], String)] = List((Some(1997),Ford), (None,Mercury))
+// res29: List[(Option[Int], String)] = List((Some(1997),Ford), (None,Mercury))
 ```
 
 ---
@@ -3065,7 +3205,7 @@ decodeCsv[(Either[Int, Boolean], String)](input)(
     ),
     stringCellDecoder
 ))
-// res28: List[(Either[Int,Boolean], String)] = List((Left(1997),Ford), (Right(true),Mercury))
+// res31: List[(Either[Int,Boolean], String)] = List((Left(1997),Ford), (Right(true),Mercury))
 ```
 
 ---
@@ -3074,147 +3214,7 @@ decodeCsv[(Either[Int, Boolean], String)](input)(
 
 ```scala
 decodeCsv[(Either[Int, Boolean], String)](input)
-// res29: List[(Either[Int,Boolean], String)] = List((Left(1997),Ford), (Right(true),Mercury))
-```
-
----
-
-## Collections of values
-
-```csv
-1,2,3
-4,5,6
-7,8,9
-```
-
----
-
-## Collections of values
-
-```scala
-implicit def listDecoder[A](
-  implicit da: CellDecoder[A]
-) =  RowDecoder.from[List[A]] { row =>
-  row.map(da.decode)
-}
-```
-
----
-
-## Collections of values
-
-```scala
-implicit def listDecoder[`A`](
-  `implicit` da: `CellDecoder[A]`
-) =  RowDecoder.from[List[A]] { row =>
-  row.map(da.decode)
-}
-```
-
----
-
-## Collections of values
-
-```scala
-implicit def listDecoder[A](
-  implicit da: CellDecoder[A]
-) =  `RowDecoder`.from[`List[A]`] { row =>
-  row.map(da.decode)
-}
-```
-
----
-
-## Collections of values
-
-```scala
-implicit def listDecoder[A](
-  implicit da: CellDecoder[A]
-) =  RowDecoder.from[List[A]] { row =>
-  `row.map(da.decode)`
-}
-```
-
----
-
-## Collections of values
-
-```scala
-val input = """1,2,3
-              |4,5,6
-              |7,8,9"""
-```
-
----
-
-## Collections of values
-
-```scala
-decodeCsv[List[Int]](input)
-```
-
----
-
-## Collections of values
-
-```scala
-decodeCsv[`List[Int]`](input)
-```
-
----
-
-## Collections of values
-
-```scala
-decodeCsv[List[Int]](input)`(???: RowDecoder[List[Int]])`
-```
-
----
-
-## Collections of values
-
-```scala
-decodeCsv[List[Int]](input)(`listDecoder[Int]`)
-```
-
----
-
-## Collections of values
-
-```scala
-decodeCsv[List[Int]](input)(listDecoder[Int]`(`
-  `???: CellDecoder[Int]`
-&#x200B;`)`)
-```
-
----
-
-## Collections of values
-
-```scala
-decodeCsv[List[Int]](input)(listDecoder[Int](
-  `intCellDecoder`
-))
-```
-
----
-
-## Collections of values
-
-```scala
-decodeCsv[List[Int]](input)(listDecoder[Int](
-  intCellDecoder
-))
-// res31: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
-```
-
----
-
-## Collections of values
-
-```scala
-decodeCsv[List[Int]](input)
-// res32: List[List[Int]] = List(List(1, 2, 3), List(4, 5, 6), List(7, 8, 9))
+// res32: List[(Either[Int,Boolean], String)] = List((Left(1997),Ford), (Right(true),Mercury))
 ```
 
 ---
