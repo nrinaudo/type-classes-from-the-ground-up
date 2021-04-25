@@ -8,7 +8,7 @@ val tutDirName = settingKey[String]("tut output directory")
 tutDirName := "./"
 
 addMappingsToSiteDir(tut, tutDirName)
-includeFilter in SitePlugin.autoImport.makeSite :=
+SitePlugin.autoImport.makeSite / includeFilter :=
     "*.yml" | "*.md" | "*.html" | "*.css" | "*.png" | "*.jpg" | "*.gif" | "*.js" | "*.eot" | "*.svg" | "*.ttf" |
     "*.woff" | "*.woff2" | "*.otf"
 
